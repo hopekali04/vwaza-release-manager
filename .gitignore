@@ -1,7 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
 
 # Environment Variables
 .env
@@ -45,4 +43,3 @@ coverage/
 
 # OS
 Thumbs.db
-.DS_Store
