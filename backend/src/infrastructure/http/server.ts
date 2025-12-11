@@ -33,7 +33,7 @@ async function buildServer() {
   });
 
   server.addHook('onResponse', async (request, reply) => {
-    const responseTime = reply.getResponseTime();
+    const responseTime = reply.elapsedTime;
     const shouldLog = reply.statusCode >= 400 || responseTime > 1000;
 
     if (shouldLog) {
