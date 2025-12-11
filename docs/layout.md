@@ -76,49 +76,60 @@ backend/
 
 ## Frontend Structure (`/frontend`)
 
-The frontend uses a **Feature-based** architecture. This keeps related components, hooks, and state logic together, making the codebase scalable and easier to navigate.
+The frontend uses a **Feature-based Hybrid** architecture combining React Router v7 Framework Mode with feature modules. Routes are thin wrappers that compose feature components.
 
 ### Directory Tree
 
 ```
-frontend/
-├── src/
-│   ├── assets/              # Static assets (images, fonts)
-│   ├── components/          # Shared/Generic UI components (Buttons, Inputs)
-│   ├── config/              # App configuration (API URLs, constants)
-│   ├── context/             # Global state (AuthContext, ThemeContext)
-│   ├── hooks/               # Shared custom hooks
-│   ├── layouts/             # Page layouts (DashboardLayout, AuthLayout)
-│   ├── lib/                 # Third-party library configurations (axios, etc.)
-│   ├── pages/               # Route components (Page level only)
-│   ├── services/            # API client definitions
-│   ├── types/               # Shared TypeScript interfaces
-│   │
-│   ├── features/            # Feature-specific modules
-│   │   ├── auth/            # Authentication feature
-│   │   ├── artist/          # Artist dashboard features
-│   │   ├── admin/           # Admin dashboard features
-│   │   └── release/         # Release management (Wizard, Status)
-│   │       ├── components/  # Feature-specific components
-│   │       ├── hooks/       # Feature-specific logic
-│   │       └── types/       # Feature-specific types
-│   │
-│   ├── App.tsx              # Root component
-│   └── main.tsx             # Entry point
+frontend/app/
+├── features/             # Feature-based modules (PRIMARY CODE LOCATION)
+│   ├── auth/             # Authentication feature
+│   │   ├── components/   # LoginForm, SignupForm
+│   │   ├── hooks/        # useAuth.tsx (AuthProvider + context)
+│   │   ├── services/     # auth.service.ts (API calls)
+│   │   ├── types/        # Type definitions directory
+│   │   └── index.ts      # Public API (export { LoginForm, useAuth })
+│   ├── artist/           # Artist dashboard feature
+│   │   ├── components/   # DashboardStats, ReleaseCard, etc.
+│   │   └── index.ts
+│   └── admin/            # Admin feature
+│       ├── components/   # AdminOverview, ApprovalQueue, etc.
+│       └── index.ts
 │
-├── public/
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
+├── routes/              # React Router v7 route files (THIN wrappers)
+│   ├── login.tsx        # Just composition, imports from features/auth
+│   ├── signup.tsx       # Just composition, imports from features/auth
+│   └── _dashboard.*.tsx # Dashboard routes (import from features)
+│
+├── components/          # Shared/Global UI components
+│   ├── ui.tsx           # Button, Input, Card, Badge, Alert
+│   ├── Sidebar.tsx      # Navigation sidebar
+│   ├── AuthLayout.tsx   # Split-screen auth layout
+│   └── FeaturePanels.tsx # Auth page feature panels
+│
+├── lib/                 # Utility libraries
+│   └── api.ts           # HTTP client with JWT handling
+│
+├── root.tsx             # App root (wraps with AuthProvider)
+├── routes.ts            # Route configuration
+└── app.css              # Global styles
 ```
 
 ### Key Architectural Decisions
 
-1.  **Features Directory**: Most code lives in `features/`. If a component is only used for the "Release Wizard", it belongs in `features/release/components`, not the global `components` folder.
-2.  **Smart vs. Dumb Components**:
-    *   **Pages/Containers** (Smart): Handle data fetching and state, pass data down.
-    *   **Components** (Dumb): Focus on UI rendering based on props.
-3.  **Services Layer**: API calls are abstracted in `services/` or `features/*/api`, keeping components clean of `fetch` calls.
+1.  **Feature-Based Hybrid**: Code lives in `features/` modules. Routes in `app/routes/` are thin wrappers (10-25 lines) that compose feature components. This combines React Router v7 Framework Mode with feature isolation.
+2.  **Public APIs**: Each feature exports a public API via `index.ts`. Import from `~/features/auth`, never from deep paths like `~/features/auth/components/LoginForm`.
+3.  **Type Directories**: Types organized as directories (`types/index.ts`), not single files, for better organization as features grow.
+4.  **Thin Routes**: Route files just compose feature components:
+    ```tsx
+    // app/routes/login.tsx - 18 lines
+    import { useAuth, LoginForm } from '~/features/auth';
+    export default function LoginPage() {
+      const { login, isLoading, error } = useAuth();
+      return <LoginForm onSubmit={login} isLoading={isLoading} error={error} />;
+    }
+    ```
+5.  **Services Layer**: API calls abstracted in `features/*/services/`, keeping components clean of `fetch` calls.
 
 ---
 
