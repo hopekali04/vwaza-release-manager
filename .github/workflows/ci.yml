@@ -120,10 +120,23 @@ jobs:
         working-directory: backend
         run: pnpm build
 
+      - name: Start PostgreSQL
+        uses: Harmon758/postgresql-action@v1
+        with:
+          postgresql version: '13'
+          postgresql db: 'testdb'
+          postgresql user: 'postgres'
+          postgresql password: 'postgres'
+
       - name: Run backend unit tests
         working-directory: backend
         env:
           NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: testdb
+          DB_USER: postgres
+          DB_PASSWORD: postgres
         run: pnpm test -- --run
 
   frontend:
