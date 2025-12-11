@@ -1,27 +1,31 @@
-export interface Config {
-  nodeEnv: 'development' | 'production' | 'test';
-  port: number;
-  host: string;
-  corsOrigin: string;
-  logLevel: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-  database: {
-    host: string;
-    port: number;
-    database: string;
-    user: string;
-    password: string;
-  };
-  jwt: {
-    secret: string;
-    expiresIn: string;
-  };
-  aws: {
-    region: string;
-    accessKeyId: string;
-    secretAccessKey: string;
-    s3Bucket: string;
-  };
-}
+import { z } from 'zod';
+
+const configSchema = z.object({
+  nodeEnv: z.enum(['development', 'production', 'test']),
+  port: z.number().int().positive(),
+  host: z.string(),
+  corsOrigin: z.string(),
+  logLevel: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']),
+  database: z.object({
+    host: z.string(),
+    port: z.number().int().positive(),
+    database: z.string(),
+    user: z.string(),
+    password: z.string(),
+  }),
+  jwt: z.object({
+    secret: z.string(),
+    expiresIn: z.string(),
+  }),
+  aws: z.object({
+    region: z.string(),
+    accessKeyId: z.string(),
+    secretAccessKey: z.string(),
+    s3Bucket: z.string(),
+  }),
+});
+
+export type Config = z.infer<typeof configSchema>;
 
 function getEnvVar(key: string, defaultValue?: string): string {
   const value = process.env[key];
@@ -47,12 +51,12 @@ function getEnvVarAsNumber(key: string, defaultValue?: number): number {
 }
 
 export function loadConfig(): Config {
-  return {
-    nodeEnv: (getEnvVar('NODE_ENV', 'development') as Config['nodeEnv']),
+  const rawConfig = {
+    nodeEnv: getEnvVar('NODE_ENV', 'development'),
     port: getEnvVarAsNumber('PORT', 3000),
     host: getEnvVar('HOST', '0.0.0.0'),
     corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:5173'),
-    logLevel: (getEnvVar('LOG_LEVEL', 'info') as Config['logLevel']),
+    logLevel: getEnvVar('LOG_LEVEL', 'info'),
     database: {
       host: getEnvVar('DB_HOST', 'localhost'),
       port: getEnvVarAsNumber('DB_PORT', 5432),
@@ -71,4 +75,10 @@ export function loadConfig(): Config {
       s3Bucket: getEnvVar('AWS_S3_BUCKET', ''),
     },
   };
+
+  const result = configSchema.safeParse(rawConfig);
+  if (!result.success) {
+    throw new Error(`Invalid configuration: ${result.error.message}`);
+  }
+  return result.data;
 }
