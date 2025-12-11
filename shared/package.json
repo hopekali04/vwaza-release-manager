@@ -1,0 +1,25 @@
+{
+  "name": "@vwaza/shared",
+  "version": "1.0.0",
+  "description": "Shared types, DTOs, and enums for Vwaza Release Manager",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "typescript",
+    "shared",
+    "types"
+  ],
+  "author": "Hope Kalitera",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
