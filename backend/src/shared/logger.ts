@@ -6,7 +6,7 @@ export function createLogger(config: Config) {
     {
       level: config.logLevel,
       stream: pino.destination({
-        dest: './logs/app.log',
+        dest: config.logFilePath,
         sync: false,
         mkdir: true,
       }),

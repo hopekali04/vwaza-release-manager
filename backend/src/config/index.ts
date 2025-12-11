@@ -6,6 +6,7 @@ const configSchema = z.object({
   host: z.string(),
   corsOrigin: z.string(),
   logLevel: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']),
+  logFilePath: z.string(),
   database: z.object({
     host: z.string(),
     port: z.number().int().positive(),
@@ -57,6 +58,7 @@ export function loadConfig(): Config {
     host: getEnvVar('HOST', '0.0.0.0'),
     corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:5173'),
     logLevel: getEnvVar('LOG_LEVEL', 'info'),
+    logFilePath: getEnvVar('LOG_FILE_PATH', './logs/app.log'),
     database: {
       host: getEnvVar('DB_HOST', 'localhost'),
       port: getEnvVarAsNumber('DB_PORT', 5432),
