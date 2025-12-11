@@ -33,10 +33,17 @@ function getEnvVar(key: string, defaultValue?: string): string {
 
 function getEnvVarAsNumber(key: string, defaultValue?: number): number {
   const value = process.env[key];
-  if (!value && defaultValue === undefined) {
-    throw new Error(`Missing required environment variable: ${key}`);
+  if (value === undefined) {
+    if (defaultValue === undefined) {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+    return defaultValue;
   }
-  return value ? parseInt(value, 10) : defaultValue!;
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed)) {
+    throw new Error(`Environment variable ${key} must be a number, but got '${value}'`);
+  }
+  return parsed;
 }
 
 export function loadConfig(): Config {
