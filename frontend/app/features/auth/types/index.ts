@@ -1,10 +1,20 @@
 /**
  * Auth Feature Type Definitions
- * Centralized types for authentication feature
+ * Re-exports shared types + feature-specific types
  */
 
-export type UserRole = "ARTIST" | "ADMIN";
+import {
+  UserRole,
+  type SignUpRequestDto,
+  type SignInRequestDto,
+  type AuthResponseDto,
+} from "@vwaza/shared";
 
+// Re-export shared types
+export { UserRole };
+export type { SignUpRequestDto, SignInRequestDto, AuthResponseDto };
+
+// User type (matches AuthResponseDto.user)
 export interface User {
   id: string;
   email: string;
@@ -12,23 +22,7 @@ export interface User {
   artistName?: string;
 }
 
-export interface SignUpRequestDto {
-  email: string;
-  password: string;
-  artistName?: string;
-  role?: UserRole;
-}
-
-export interface SignInRequestDto {
-  email: string;
-  password: string;
-}
-
-export interface AuthResponseDto {
-  accessToken: string;
-  user: User;
-}
-
+// Feature-specific context type (not in shared - only used by React)
 export interface AuthContextType {
   user: User | null;
   isLoading: boolean;

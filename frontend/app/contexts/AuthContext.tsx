@@ -6,10 +6,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { authService, type AuthResponseDto, type SignUpRequestDto, type SignInRequestDto } from '~/services/auth.service';
+import { authService } from '~/services/auth.service';
 import type { ApiError } from '~/lib/api';
-
-type UserRole = 'ARTIST' | 'ADMIN';
+import type { UserRole, SignUpRequestDto, SignInRequestDto, AuthResponseDto } from '@vwaza/shared';
 
 interface User {
   id: string;
