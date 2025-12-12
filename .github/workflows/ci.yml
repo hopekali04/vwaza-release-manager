@@ -124,7 +124,7 @@ jobs:
         uses: Harmon758/postgresql-action@v1
         with:
           postgresql version: "13"
-          postgresql db: "vwaza_release_manager" 
+          postgresql db: "vwaza_release_manager"
           postgresql user: "postgres"
           postgresql password: "postgres"
 
@@ -134,9 +134,20 @@ jobs:
           NODE_ENV: test
           DB_HOST: localhost
           DB_PORT: 5432
-          DB_NAME: vwaza_release_manager 
+          DB_NAME: vwaza_release_manager
           DB_USER: postgres
           DB_PASSWORD: postgres
+          PORT: 3000
+          HOST: 0.0.0.0
+          CORS_ORIGIN: http://localhost:5173
+          LOG_LEVEL: info
+          LOG_FILE_PATH: ./logs/app.log
+          JWT_SECRET: test-secret
+          JWT_EXPIRES_IN: 1h
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test-access-key
+          AWS_SECRET_ACCESS_KEY: test-secret-key
+          AWS_S3_BUCKET: test-bucket
         run: pnpm db:migrate
 
       - name: Run backend unit tests
@@ -145,9 +156,20 @@ jobs:
           NODE_ENV: test
           DB_HOST: localhost
           DB_PORT: 5432
-          DB_NAME: vwaza_release_manager 
+          DB_NAME: vwaza_release_manager
           DB_USER: postgres
           DB_PASSWORD: postgres
+          PORT: 3000
+          HOST: 0.0.0.0
+          CORS_ORIGIN: http://localhost:5173
+          LOG_LEVEL: info
+          LOG_FILE_PATH: ./logs/app.log
+          JWT_SECRET: test-secret
+          JWT_EXPIRES_IN: 1h
+          AWS_REGION: us-east-1
+          AWS_ACCESS_KEY_ID: test-access-key
+          AWS_SECRET_ACCESS_KEY: test-secret-key
+          AWS_S3_BUCKET: test-bucket
         run: pnpm test -- --run
 
   frontend:
