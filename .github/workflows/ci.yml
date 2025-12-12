@@ -128,13 +128,24 @@ jobs:
           postgresql user: "postgres"
           postgresql password: "postgres"
 
+      - name: Run database migrations
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: vwaza_release_manager 
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: pnpm db:migrate
+
       - name: Run backend unit tests
         working-directory: backend
         env:
           NODE_ENV: test
           DB_HOST: localhost
           DB_PORT: 5432
-          DB_DATABASE: vwaza_release_manager 
+          DB_NAME: vwaza_release_manager 
           DB_USER: postgres
           DB_PASSWORD: postgres
         run: pnpm test -- --run
