@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { authService } from '~/services/auth.service';
-import type { ApiError } from '~/lib/api';u
+import type { ApiError } from '~/lib/api';
 import type { UserRole, SignUpRequestDto, SignInRequestDto, AuthResponseDto } from '@vwaza/shared';
 
 interface User {
