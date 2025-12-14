@@ -37,7 +37,12 @@ export const releaseService = {
   },
 
   async createTrack(releaseId: string, data: CreateTrackData): Promise<Track> {
-    return apiClient.post(`/api/releases/${releaseId}/tracks`, data);
+    // Backend treats ISRC as optional but validates length when present; drop empty strings to avoid 400
+    const payload = { ...data } as Partial<CreateTrackData>;
+    if (!payload.isrc || payload.isrc.trim().length === 0) {
+      delete payload.isrc;
+    }
+    return apiClient.post(`/api/releases/${releaseId}/tracks`, payload);
   },
 
   async updateTrack(id: string, data: Partial<CreateTrackData>): Promise<Track> {
