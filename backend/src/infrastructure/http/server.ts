@@ -4,11 +4,14 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import multipart from '@fastify/multipart';
 import { loadConfig } from '@config/index';
 import { createLogger } from '@shared/logger';
 import { createDatabasePool, testDatabaseConnection, closeDatabasePool } from '@infrastructure/database';
 import { WorkerManager } from '@infrastructure/workers';
 import { authRoutes } from './routes/authRoutes.js';
+import { releaseRoutes } from './routes/releaseRoutes.js';
+import { trackRoutes } from './routes/trackRoutes.js';
 
 async function buildServer() {
   const config = loadConfig();
@@ -48,6 +51,14 @@ async function buildServer() {
   await server.register(cors, {
     origin: config.corsOrigin,
     credentials: true,
+  });
+
+  // Register multipart for file uploads
+  await server.register(multipart, {
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB max file size
+      files: 1, // Max 1 file per request
+    },
   });
 
   // Register Swagger for API documentation
@@ -93,7 +104,9 @@ async function buildServer() {
   });
 
   // Register routes
-  await server.register(authRoutes, { prefix: '/api/auth' });
+  await server.register(authRoutes);
+  await server.register(releaseRoutes);
+  await server.register(trackRoutes);
 
   server.addHook('onResponse', async (request, reply) => {
     const responseTime = reply.elapsedTime;
