@@ -2,6 +2,7 @@
  * API Configuration and HTTP Client
  * Centralized HTTP client with auth token management
  */
+import { showToast } from './toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -50,12 +51,18 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw {
+        const apiError: ApiError = {
           message: errorData.error?.message || 'Request failed',
           statusCode: response.status,
           requestId: errorData.error?.requestId,
           details: errorData.error?.details,
-        } as ApiError;
+        };
+        showToast({
+          variant: 'error',
+          title: 'We could not complete that action',
+          message: apiError.message || 'Something went wrong',
+        });
+        throw apiError;
       }
 
       return await response.json();
@@ -63,10 +70,16 @@ class ApiClient {
       if ((error as ApiError).statusCode) {
         throw error;
       }
-      throw {
+      const apiError: ApiError = {
         message: 'Network error. Please check your connection.',
         statusCode: 0,
-      } as ApiError;
+      };
+      showToast({
+        variant: 'error',
+        title: 'Network issue',
+        message: apiError.message,
+      });
+      throw apiError;
     }
   }
 
