@@ -12,26 +12,26 @@ export function ReviewSummary({ release, tracks, onSubmit, isSubmitting }: Revie
   const totalDuration = tracks.reduce((sum, t) => sum + (t.durationSeconds || 0), 0);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-4">Review & Submit</h2>
-      <p className="text-gray-600 mb-6">Confirm your release details before submitting for review.</p>
+    <div className="bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl p-6">
+      <h2 className="text-xl font-semibold text-white mb-2">Review & Submit</h2>
+      <p className="text-neutral-400 mb-6">Confirm your release details before submitting for review.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h3 className="font-medium mb-3">Release Details</h3>
-          <div className="space-y-2 text-sm text-gray-700">
-            <div><span className="font-medium">Title:</span> {release.title}</div>
-            <div><span className="font-medium">Genre:</span> {release.genre}</div>
-            <div><span className="font-medium">Tracks:</span> {tracks.length}</div>
-            <div><span className="font-medium">Total Duration:</span> {Math.round(totalDuration / 60)} min</div>
+          <h3 className="font-medium text-white mb-3">Release Details</h3>
+          <div className="space-y-2 text-sm text-neutral-400">
+            <div><span className="font-medium text-white">Title:</span> {release.title}</div>
+            <div><span className="font-medium text-white">Genre:</span> {release.genre}</div>
+            <div><span className="font-medium text-white">Tracks:</span> {tracks.length}</div>
+            <div><span className="font-medium text-white">Total Duration:</span> {Math.round(totalDuration / 60)} min</div>
           </div>
         </div>
         <div>
-          <h3 className="font-medium mb-3">Cover Art</h3>
+          <h3 className="font-medium text-white mb-3">Cover Art</h3>
           {release.coverArtUrl ? (
-            <img src={release.coverArtUrl} alt={release.title} className="w-48 h-48 object-cover rounded-lg border border-gray-200" />
+            <img src={release.coverArtUrl} alt={release.title} className="w-48 h-48 object-cover rounded-lg border border-white/10" />
           ) : (
-            <div className="w-48 h-48 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 text-sm">
+            <div className="w-48 h-48 bg-neutral-800 rounded-lg border border-white/10 flex items-center justify-center text-neutral-500 text-sm">
               No cover art
             </div>
           )}
@@ -39,15 +39,15 @@ export function ReviewSummary({ release, tracks, onSubmit, isSubmitting }: Revie
       </div>
 
       <div className="mt-6">
-        <h3 className="font-medium mb-3">Track List</h3>
+        <h3 className="font-medium text-white mb-3">Track List</h3>
         <div className="space-y-2">
           {tracks.map((t) => (
-            <div key={t.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+            <div key={t.id} className="flex items-center justify-between bg-neutral-800/50 border border-white/10 p-3 rounded-lg">
               <div className="flex items-center gap-3">
-                <span className="text-gray-400 text-sm w-6">{t.trackOrder}</span>
-                <span className="font-medium">{t.title}</span>
+                <span className="text-neutral-500 text-sm w-6">{t.trackOrder}</span>
+                <span className="font-medium text-white">{t.title}</span>
               </div>
-              <span className="text-xs text-gray-500">{Math.round((t.durationSeconds || 0))}s</span>
+              <span className="text-xs text-neutral-500">{Math.round((t.durationSeconds || 0))}s</span>
             </div>
           ))}
         </div>
