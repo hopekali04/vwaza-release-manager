@@ -127,6 +127,59 @@ export class ReleaseRepository implements IReleaseRepository {
     }));
   }
 
+  async getReleasesWithTrackCountPaginated(
+    page: number,
+    limit: number,
+    artistId?: string,
+    status?: ReleaseStatus
+  ): Promise<{ releases: Array<Release & { trackCount: number }>; total: number }> {
+    const offset = (page - 1) * limit;
+    
+    let whereConditions: string[] = [];
+    let params: any[] = [];
+    let paramIndex = 1;
+
+    if (artistId) {
+      whereConditions.push(`r.artist_id = $${paramIndex++}`);
+      params.push(artistId);
+    }
+
+    if (status) {
+      whereConditions.push(`r.status = $${paramIndex++}`);
+      params.push(status);
+    }
+
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(DISTINCT r.id)::int as total
+      FROM releases r
+      ${whereClause}
+    `;
+    const countResult = await this.pool.query(countQuery, params);
+    const total = countResult.rows[0].total;
+
+    // Get paginated results
+    const dataQuery = `
+      SELECT r.*, COUNT(t.id)::int as track_count
+      FROM releases r
+      LEFT JOIN tracks t ON t.release_id = r.id
+      ${whereClause}
+      GROUP BY r.id
+      ORDER BY r.created_at DESC
+      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+    `;
+    const dataResult = await this.pool.query(dataQuery, [...params, limit, offset]);
+
+    const releases = dataResult.rows.map((row) => ({
+      ...this.mapToEntity(row),
+      trackCount: row.track_count,
+    }));
+
+    return { releases, total };
+  }
+
   private mapToEntity(row: any): Release {
     return {
       id: row.id,
