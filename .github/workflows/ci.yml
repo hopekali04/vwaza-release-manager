@@ -148,6 +148,10 @@ jobs:
           AWS_ACCESS_KEY_ID: test-access-key
           AWS_SECRET_ACCESS_KEY: test-secret-key
           AWS_S3_BUCKET: test-bucket
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_ANON_KEY: supabase-anon-test-key
+          SUPABASE_SERVICE_ROLE_KEY: supabase-service-role-test-key
+          SUPABASE_JWT_SECRET: supabase-jwt-test-secret
         run: pnpm db:migrate
 
       - name: Run backend unit tests
@@ -170,6 +174,10 @@ jobs:
           AWS_ACCESS_KEY_ID: test-access-key
           AWS_SECRET_ACCESS_KEY: test-secret-key
           AWS_S3_BUCKET: test-bucket
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_ANON_KEY: supabase-anon-test-key
+          SUPABASE_SERVICE_ROLE_KEY: supabase-service-role-test-key
+          SUPABASE_JWT_SECRET: supabase-jwt-test-secret
         run: pnpm test -- --run
 
   frontend:
