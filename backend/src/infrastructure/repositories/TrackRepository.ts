@@ -21,7 +21,8 @@ export class TrackRepository implements ITrackRepository {
         data.trackOrder,
         data.isrc || null,
         data.audioFileUrl || '',
-        data.durationSeconds || 0,
+        // DB constraint requires duration_seconds > 0; default to 1s until audio upload updates it
+        data.durationSeconds && data.durationSeconds > 0 ? data.durationSeconds : 1,
       ]
     );
     return this.mapToEntity(result.rows[0]);
