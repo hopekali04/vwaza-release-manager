@@ -45,7 +45,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const links = user?.role === 'ADMIN' ? adminLinks : artistLinks;
 
   return (
-    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-neutral-950 border-r border-white/5 flex flex-col h-screen fixed left-0 top-0 z-50 transition-all duration-300`}>
+    <aside className={`${isCollapsed ? 'w-20' : 'w-64'} bg-neutral-900/80 backdrop-blur-xl border border-white/10 flex flex-col fixed left-6 top-6 bottom-6 z-50 transition-all duration-300 rounded-2xl shadow-2xl shadow-black/50`}>
       {/* Logo */}
       <div className="p-6">
         <div className="flex items-center gap-2 justify-between">

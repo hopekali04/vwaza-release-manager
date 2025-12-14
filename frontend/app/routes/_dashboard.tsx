@@ -44,7 +44,7 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-black text-neutral-200 font-sans">
       <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-      <main className={`${isSidebarCollapsed ? 'ml-20' : 'ml-64'} p-8 max-w-7xl transition-all duration-300`}>
+      <main className={`${isSidebarCollapsed ? 'pl-32' : 'pl-80'} pr-8 py-8 transition-all duration-300`}>
         <Outlet />
       </main>
     </div>
