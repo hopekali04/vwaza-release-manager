@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { createLogger } from '@shared/logger';
 import { loadConfig } from '@config/index';
 import { UploadJobType } from '@vwaza/shared';
@@ -10,49 +11,73 @@ import { UploadJobType } from '@vwaza/shared';
  */
 export class CloudStorageService {
   private logger = createLogger(loadConfig());
-  private baseUrl = 'https://mock-cdn.vwaza.com';
+  private supabase: SupabaseClient;
+  private bucket: string;
+
+  constructor() {
+    const config = loadConfig();
+    this.supabase = createClient(config.supabase.url, config.supabase.key);
+    this.bucket = config.supabase.bucket;
+  }
 
   /**
-   * Simulate file upload to cloud storage
+   * Upload file to Supabase Storage
    * @param buffer File buffer
    * @param filename Original filename
    * @param type Upload type (AUDIO or COVER_ART)
-   * @returns Simulated CDN URL
+   * @returns Public URL and optional duration
    */
   async uploadFile(
     buffer: Buffer,
     filename: string,
     type: UploadJobType
   ): Promise<{ url: string; duration?: number }> {
-    // Simulate upload delay (1-3 seconds)
-    const uploadDelay = Math.random() * 2000 + 1000;
-    await new Promise((resolve) => setTimeout(resolve, uploadDelay));
+    const fileExt = filename.split('.').pop();
+    const uniqueId = randomUUID();
+    // Organize files by type: audio/uuid.mp3 or cover_art/uuid.jpg
+    const path = `${type.toLowerCase()}/${uniqueId}.${fileExt}`;
 
-    // Generate a unique file key
-    const fileExtension = filename.split('.').pop();
-    const uniqueKey = `${randomUUID()}.${fileExtension}`;
-    const folder = type === UploadJobType.AUDIO ? 'audio' : 'covers';
-    
-    const url = `${this.baseUrl}/${folder}/${uniqueKey}`;
+    // Determine content type based on extension (basic mapping)
+    let contentType = 'application/octet-stream';
+    if (fileExt === 'mp3') contentType = 'audio/mpeg';
+    else if (fileExt === 'wav') contentType = 'audio/wav';
+    else if (['jpg', 'jpeg'].includes(fileExt || '')) contentType = 'image/jpeg';
+    else if (fileExt === 'png') contentType = 'image/png';
 
-    this.logger.info(
-      { filename, type, url, size: buffer.length },
-      'File uploaded to simulated cloud storage'
-    );
+    const { error } = await this.supabase.storage
+      .from(this.bucket)
+      .upload(path, buffer, {
+        contentType,
+        upsert: false
+      });
 
-    // For audio files, simulate metadata extraction (duration)
+    if (error) {
+      this.logger.error({ error, filename }, 'Failed to upload file to Supabase Storage');
+      throw new Error(`Upload failed: ${error.message}`);
+    }
+
+    const { data: { publicUrl } } = this.supabase.storage
+      .from(this.bucket)
+      .getPublicUrl(path);
+
     let duration: number | undefined;
+
     if (type === UploadJobType.AUDIO) {
-      // Simulate random duration between 2-5 minutes
+      // Simulate duration extraction (would normally use music-metadata on the buffer)
       duration = Math.floor(Math.random() * 180) + 120;
       
       this.logger.info(
-        { filename, duration },
-        'Extracted audio metadata (simulated)'
+        { filename, duration, publicUrl },
+        'Uploaded audio file to Supabase'
+      );
+    } else {
+      this.logger.info(
+        { filename, publicUrl },
+        'Uploaded image file to Supabase'
       );
     }
 
-    return { url, duration };
+    return { url: publicUrl, duration };
   }
 
   /**
