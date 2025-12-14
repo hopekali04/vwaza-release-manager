@@ -62,11 +62,23 @@ export class ReleaseController {
   async listReleases(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const useCase = new ListReleasesUseCase(this.releaseRepository);
     
+    // Parse query params
+    const query = request.query as any;
+    const page = query.page ? parseInt(query.page) : 1;
+    const limit = query.limit ? parseInt(query.limit) : 10;
+    const status = query.status as any;
+    
     // Artists see only their releases, admins see all
     const artistId = request.user!.role === UserRole.ARTIST ? request.user!.userId : undefined;
-    const releases = await useCase.execute(artistId);
+    
+    const result = await useCase.execute({
+      artistId,
+      status,
+      page,
+      limit,
+    });
 
-    reply.send(releases);
+    reply.send(result);
   }
 
   async updateRelease(
