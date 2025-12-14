@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui';
 import type { Release, Track } from '~/features/releases';
-import { releaseService } from '~/features/releases';
-import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { releaseService, PaginatedReleasesResponse } from '~/features/releases';
+import { ChevronDown, ChevronUp, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TrackDetailsModal } from './TrackDetailsModal';
+
+type ViewMode = 'pending' | 'all';
 
 export function AdminApprovalPanel() {
   const [releases, setReleases] = useState<Release[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('pending');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
   
   // Track playback state
   const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null);
@@ -19,13 +28,19 @@ export function AdminApprovalPanel() {
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchPendingReleases = async () => {
+  const fetchReleases = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const allReleases = await releaseService.getReleases();
-      const pending = allReleases.filter(r => r.status === 'PENDING_REVIEW');
-      setReleases(pending);
+      const params = {
+        page: currentPage,
+        limit,
+        ...(viewMode === 'pending' && { status: 'PENDING_REVIEW' }),
+      };
+      const response: PaginatedReleasesResponse = await releaseService.getReleases(params);
+      setReleases(response.releases);
+      setTotalPages(response.pagination.totalPages);
+      setTotal(response.pagination.total);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch releases');
     } finally {
@@ -83,24 +98,61 @@ export function AdminApprovalPanel() {
     }
   };
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount and when view mode or page changes
   useEffect(() => {
-    fetchPendingReleases();
-  }, []);
+    fetchReleases();
+  }, [viewMode, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setExpandedReleaseId(null); // Close expanded releases on page change
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setCurrentPage(1); // Reset to first page when switching views
+    setExpandedReleaseId(null);
+  };
 
   if (isLoading && releases.length === 0) {
-    return <div className="text-center py-12 text-neutral-400">Loading pending releases...</div>;
+    return <div className="text-center py-12 text-neutral-400">Loading releases...</div>;
   }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">Pending Approvals</h2>
-          <p className="text-neutral-400 mt-1">Review and approve artist releases</p>
+          <h2 className="text-3xl font-bold text-white tracking-tight">Release Management</h2>
+          <p className="text-neutral-400 mt-1">Review and manage releases</p>
         </div>
-        <Button variant="secondary" onClick={fetchPendingReleases}>
-          Refresh
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" onClick={fetchReleases}>
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* View Mode Toggle */}
+      <div className="flex items-center gap-2 bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl p-2">
+        <Button
+          variant={viewMode === 'pending' ? 'primary' : 'ghost'}
+          onClick={() => handleViewModeChange('pending')}
+          className="flex-1 text-base font-medium"
+        >
+          Pending Approvals
+          {viewMode === 'pending' && total > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-white/10 rounded-full text-sm">{total}</span>
+          )}
+        </Button>
+        <Button
+          variant={viewMode === 'all' ? 'primary' : 'ghost'}
+          onClick={() => handleViewModeChange('all')}
+          className="flex-1 text-base font-medium"
+        >
+          All Releases
+          {viewMode === 'all' && total > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-white/10 rounded-full text-sm">{total}</span>
+          )}
         </Button>
       </div>
 
@@ -216,6 +268,63 @@ export function AdminApprovalPanel() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl p-4">
+          <div className="text-sm text-neutral-400">
+            Showing page {currentPage} of {totalPages} ({total} total)
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? 'primary' : 'ghost'}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                    className="min-w-[2.5rem]"
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       )}
 
