@@ -9,17 +9,17 @@ export default function ReleasesPage() {
   if (isLoading && releases.length === 0) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="text-gray-500">Loading releases...</div>
+        <div className="text-neutral-400">Loading releases...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Releases</h1>
-          <p className="text-gray-600 mt-1">Manage your music releases and tracks</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">My Releases</h1>
+          <p className="text-neutral-400 mt-1">Manage your music releases and tracks</p>
         </div>
         <Link to="/dashboard/releases/new">
           <Button variant="primary">
@@ -32,7 +32,7 @@ export default function ReleasesPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
