@@ -15,6 +15,7 @@ const SIMULATED_PROCESSING_TIME = 7000; // Simulate 7s processing time per relea
 
 export class ProcessingWorker {
   private isRunning = false;
+  private isProcessing = false;
   private logger = createLogger(loadConfig());
 
   async start(): Promise<void> {
@@ -28,9 +29,11 @@ export class ProcessingWorker {
     
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(() => {
-      this.processReleases().catch((error) => {
-        this.logger.error({ error }, 'Error processing releases');
-      });
+      if (!this.isProcessing) {
+        this.processReleases().catch((error) => {
+          this.logger.error({ error }, 'Error processing releases');
+        });
+      }
     }, POLL_INTERVAL);
   }
 
@@ -40,24 +43,33 @@ export class ProcessingWorker {
   }
 
   private async processReleases(): Promise<void> {
-    const pool = getDatabasePool();
-    
-    // Find releases in PROCESSING state
-    const result = await pool.query<ProcessingRelease>(
-      `SELECT 
-         r.id, 
-         r.artist_id AS "artistId",
-         r.title,
-         COUNT(t.id) AS "trackCount"
-       FROM releases r
-       LEFT JOIN tracks t ON t.release_id = r.id
-       WHERE r.status = $1
-       GROUP BY r.id, r.artist_id, r.title`,
-      [ReleaseStatus.PROCESSING]
-    );
+    this.isProcessing = true;
+    try {
+      const pool = getDatabasePool();
+      
+      // Find releases in PROCESSING state
+      const result = await pool.query<ProcessingRelease>(
+        `SELECT 
+           r.id, 
+           r.artist_id AS "artistId",
+           r.title,
+           COUNT(t.id) AS "trackCount"
+         FROM releases r
+         LEFT JOIN tracks t ON t.release_id = r.id
+         WHERE r.status = $1
+         GROUP BY r.id, r.artist_id, r.title`,
+        [ReleaseStatus.PROCESSING]
+      );
 
-    for (const release of result.rows) {
-      await this.processRelease(release);
+      for (const row of result.rows) {
+        const release: ProcessingRelease = {
+          ...row,
+          trackCount: parseInt(String(row.trackCount), 10)
+        };
+        await this.processRelease(release);
+      }
+    } finally {
+      this.isProcessing = false;
     }
   }
 
