@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '~/components/ui';
 
 interface FileUploadProps {
@@ -15,6 +15,12 @@ export function FileUpload({ label, accept, maxSize, onUpload, currentUrl, type 
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (currentUrl) {
+      setPreview(currentUrl);
+    }
+  }, [currentUrl]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,21 +74,21 @@ export function FileUpload({ label, accept, maxSize, onUpload, currentUrl, type 
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
+      <label className="block text-sm font-medium text-neutral-400 uppercase tracking-wider">{label}</label>
       
       {type === 'image' && preview && (
         <div className="mb-3">
           <img
             src={preview}
             alt="Preview"
-            className="w-48 h-48 object-cover rounded-lg border border-gray-200"
+            className="w-48 h-48 object-cover rounded-lg border border-white/10"
           />
         </div>
       )}
 
       {type === 'audio' && currentUrl && (
         <div className="mb-3">
-          <div className="flex items-center space-x-2 text-sm text-green-600">
+          <div className="flex items-center space-x-2 text-sm text-green-400">
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
