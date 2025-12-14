@@ -91,6 +91,52 @@ class ApiClient {
   async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
+
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async upload<T>(endpoint: string, formData: FormData): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    const token = this.getAuthToken();
+
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw {
+          message: errorData.error?.message || 'Upload failed',
+          statusCode: response.status,
+          requestId: errorData.error?.requestId,
+          details: errorData.error?.details,
+        } as ApiError;
+      }
+
+      return await response.json();
+    } catch (error) {
+      if ((error as ApiError).statusCode) {
+        throw error;
+      }
+      throw {
+        message: 'Network error. Please check your connection.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
