@@ -79,34 +79,37 @@ export function AdminApprovalPanel() {
   }, []);
 
   if (isLoading && releases.length === 0) {
-    return <div className="text-center py-12 text-gray-500">Loading pending releases...</div>;
+    return <div className="text-center py-12 text-neutral-400">Loading pending releases...</div>;
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Pending Approvals</h2>
-        <Button variant="outline" onClick={fetchPendingReleases}>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-3xl font-bold text-white tracking-tight">Pending Approvals</h2>
+          <p className="text-neutral-400 mt-1">Review and approve artist releases</p>
+        </div>
+        <Button variant="secondary" onClick={fetchPendingReleases}>
           Refresh
         </Button>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
 
       {releases.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No releases pending review</p>
+        <div className="text-center py-12 bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl">
+          <p className="text-neutral-400">No releases pending review</p>
         </div>
       ) : (
         <div className="space-y-4">
           {releases.map((release) => (
             <div
               key={release.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+              className="bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl p-6 hover:bg-neutral-900/70 transition-all"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4 flex-1">
@@ -114,19 +117,19 @@ export function AdminApprovalPanel() {
                     <img
                       src={release.coverArtUrl}
                       alt={release.title}
-                      className="w-24 h-24 rounded object-cover"
+                      className="w-24 h-24 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-24 h-24 bg-gray-200 rounded flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Cover</span>
+                    <div className="w-24 h-24 bg-neutral-800 rounded-lg flex items-center justify-center">
+                      <span className="text-neutral-500 text-xs">No Cover</span>
                     </div>
                   )}
                   
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-1">{release.title}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{release.genre}</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">{release.title}</h3>
+                    <p className="text-sm text-neutral-400 mb-2">{release.genre}</p>
                     
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                    <div className="flex items-center space-x-4 text-sm text-neutral-500 mb-3">
                       <span>{release.trackCount || 0} tracks</span>
                       <span>•</span>
                       <span>Submitted {new Date(release.updatedAt).toLocaleString()}</span>
@@ -171,17 +174,17 @@ export function AdminApprovalPanel() {
 
               {/* Tracks Section */}
               {expandedReleaseId === release.id && (
-                <div className="mt-6 border-t pt-4">
-                  <h4 className="font-medium mb-3">Tracks</h4>
+                <div className="mt-6 border-t border-white/5 pt-4">
+                  <h4 className="font-medium text-white mb-3">Tracks</h4>
                   {loadingTracks[release.id] ? (
-                    <div className="text-sm text-gray-500">Loading tracks...</div>
+                    <div className="text-sm text-neutral-400">Loading tracks...</div>
                   ) : (
                     <div className="space-y-2">
                       {tracks[release.id]?.map((track) => (
-                        <div key={track.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                        <div key={track.id} className="flex items-center justify-between bg-neutral-800/50 p-3 rounded-lg">
                           <div className="flex items-center gap-3">
-                            <span className="text-gray-400 text-sm w-6">{track.trackOrder}</span>
-                            <span className="font-medium">{track.title}</span>
+                            <span className="text-neutral-500 text-sm w-6">{track.trackOrder}</span>
+                            <span className="font-medium text-white">{track.title}</span>
                           </div>
                           
                           {track.audioFileUrl && (
