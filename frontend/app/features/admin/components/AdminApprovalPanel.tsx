@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui';
 import type { Release, Track } from '~/features/releases';
 import { releaseService } from '~/features/releases';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { TrackDetailsModal } from './TrackDetailsModal';
 
 export function AdminApprovalPanel() {
   const [releases, setReleases] = useState<Release[]>([]);
@@ -13,6 +14,10 @@ export function AdminApprovalPanel() {
   const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null);
   const [tracks, setTracks] = useState<Record<string, Track[]>>({});
   const [loadingTracks, setLoadingTracks] = useState<Record<string, boolean>>({});
+
+  // Modal state
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchPendingReleases = async () => {
     setIsLoading(true);
@@ -47,6 +52,11 @@ export function AdminApprovalPanel() {
         setLoadingTracks(prev => ({ ...prev, [releaseId]: false }));
       }
     }
+  };
+
+  const handleViewTrack = (track: Track) => {
+    setSelectedTrack(track);
+    setIsModalOpen(true);
   };
 
   const handleApprove = async (id: string) => {
@@ -187,15 +197,17 @@ export function AdminApprovalPanel() {
                             <span className="font-medium text-white">{track.title}</span>
                           </div>
                           
-                          {track.audioFileUrl && (
-                            <div className="flex items-center gap-2">
-                              <audio
-                                controls
-                                src={track.audioFileUrl}
-                                className="h-8 w-64"
-                              />
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewTrack(track)}
+                              className="text-neutral-400 hover:text-white"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -206,6 +218,12 @@ export function AdminApprovalPanel() {
           ))}
         </div>
       )}
+
+      <TrackDetailsModal 
+        track={selectedTrack}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
