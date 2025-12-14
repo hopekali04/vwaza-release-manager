@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui';
-import type { Release, Track } from '~/features/releases';
-import { releaseService, PaginatedReleasesResponse } from '~/features/releases';
+import type { Release, Track, PaginatedReleasesResponse } from '~/features/releases';
+import { releaseService } from '~/features/releases';
 import { ChevronDown, ChevronUp, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TrackDetailsModal } from './TrackDetailsModal';
 

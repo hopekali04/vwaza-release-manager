@@ -1,22 +1,5 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
-import { ReleaseResponseDto, ReleaseStatus } from '@vwaza/shared';
-
-export interface ListReleasesParams {
-  artistId?: string;
-  status?: ReleaseStatus;
-  page?: number;
-  limit?: number;
-}
-
-export interface PaginatedReleasesResponse {
-  releases: Array<ReleaseResponseDto & { trackCount: number }>;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import { PaginatedReleasesResponse, GetReleasesParams as ListReleasesParams } from '@vwaza/shared';
 
 export class ListReleasesUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}

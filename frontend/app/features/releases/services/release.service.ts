@@ -1,21 +1,8 @@
 import { apiClient } from '~/lib/api';
 import type { Release, CreateReleaseData, UpdateReleaseData, Track, CreateTrackData } from '../types';
+import type { PaginatedReleasesResponse, GetReleasesParams } from '@vwaza/shared';
 
-export interface PaginatedReleasesResponse {
-  releases: Release[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface GetReleasesParams {
-  page?: number;
-  limit?: number;
-  status?: string;
-}
+export type { PaginatedReleasesResponse, GetReleasesParams };
 
 export const releaseService = {
   async createRelease(data: CreateReleaseData): Promise<Release> {
