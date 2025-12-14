@@ -13,7 +13,7 @@ export default function DashboardLayout() {
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     // Wait until auth state is confirmed
