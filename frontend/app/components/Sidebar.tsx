@@ -3,7 +3,7 @@
  * Role-based navigation for Artist and Admin dashboards
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { useAuth } from '~/features/auth';
 import { 
@@ -19,10 +19,14 @@ import {
   Users
 } from 'lucide-react';
 
-export function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}
+
+export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
   const { logout, user } = useAuth();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const artistLinks = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -56,11 +60,11 @@ export function Sidebar() {
           )}
         </div>
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={onToggleCollapse}
           className="mt-4 w-full flex items-center justify-center p-2 text-neutral-400 hover:text-white hover:bg-neutral-900 rounded-lg transition-colors"
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isCollapsed ? <Menu className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 

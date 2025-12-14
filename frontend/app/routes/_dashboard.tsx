@@ -3,7 +3,7 @@
  * Protected layout with sidebar navigation
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useAuth } from '~/features/auth';
 import { Sidebar } from '~/components/Sidebar';
@@ -13,6 +13,7 @@ export default function DashboardLayout() {
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     // Wait until auth state is confirmed
@@ -42,8 +43,8 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-black text-neutral-200 font-sans">
-      <Sidebar />
-      <main className="ml-20 lg:ml-64 p-8 max-w-7xl transition-all duration-300">
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      <main className={`${isSidebarCollapsed ? 'ml-20' : 'ml-64'} p-8 max-w-7xl transition-all duration-300`}>
         <Outlet />
       </main>
     </div>
