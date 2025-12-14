@@ -9,7 +9,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
   // POST /api/auth/signup
   fastify.post(
-    '/signup',
+    '/api/auth/signup',
     {
       schema: {
         description: 'Create a new user account',
@@ -122,7 +122,7 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
 
   // POST /api/auth/signin
   fastify.post(
-    '/signin',
+    '/api/auth/signin',
     {
       schema: {
         description: 'Authenticate user and return access token',
