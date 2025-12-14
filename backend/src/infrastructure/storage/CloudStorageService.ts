@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { parseBuffer } from 'music-metadata';
 import { createLogger } from '@shared/logger';
 import { loadConfig } from '@config/index';
 import { UploadJobType } from '@vwaza/shared';
@@ -63,13 +64,23 @@ export class CloudStorageService {
     let duration: number | undefined;
 
     if (type === UploadJobType.AUDIO) {
-      // Simulate duration extraction (would normally use music-metadata on the buffer)
-      duration = Math.floor(Math.random() * 180) + 120;
-      
-      this.logger.info(
-        { filename, duration, publicUrl },
-        'Uploaded audio file to Supabase'
-      );
+      try {
+        // Extract actual duration from audio file buffer
+        const metadata = await parseBuffer(buffer, { mimeType: contentType });
+        if (metadata.format.duration) {
+          duration = Math.floor(metadata.format.duration);
+        }
+        
+        this.logger.info(
+          { filename, duration, publicUrl },
+          'Uploaded audio file to Supabase'
+        );
+      } catch (error) {
+        this.logger.error(
+          { error, filename },
+          'Failed to extract audio metadata, duration will be undefined'
+        );
+      }
     } else {
       this.logger.info(
         { filename, publicUrl },
