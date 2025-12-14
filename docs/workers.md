@@ -109,18 +109,18 @@ Checks: Are all tracks uploaded?
 
 ### Production Migration Path
 
-1. **Replace Simulated Uploads**:
+1. **Replace Simulated Uploads** (Using Supabase Storage):
 ```typescript
-// Replace in upload-worker.ts
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+// Already implemented in upload-worker.ts
+import { CloudStorageService } from '@infrastructure/storage/CloudStorageService';
 
-const s3Client = new S3Client({ region: config.aws.region });
-const fileStream = fs.createReadStream(job.localPath);
-await s3Client.send(new PutObjectCommand({
-  Bucket: config.aws.s3Bucket,
-  Key: `uploads/${job.id}`,
-  Body: fileStream,
-}));
+const cloudStorage = new CloudStorageService();
+const buffer = await readFile(job.localPath);
+const { url, duration } = await cloudStorage.uploadFile(
+  buffer,
+  basename(job.localPath),
+  job.jobType
+);
 ```
 
 2. **Add Real Processing**:

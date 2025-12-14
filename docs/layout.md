@@ -38,7 +38,7 @@ The backend follows **Clean Architecture** principles. Dependencies point inward
 ```
 backend/
 ├── src/
-│   ├── config/              # Environment variables (e.g., DB_URL, AWS_KEYS)
+│   ├── config/              # Environment variables (e.g., DB_URL, SUPABASE_KEY)
 │   │
 │   ├── domain/              # THE "WHAT" (Pure Business Logic)
 │   │   ├── entities/        # Core Business Objects (e.g., User, Release). Pure TS.
@@ -51,7 +51,7 @@ backend/
 │   ├── infrastructure/      # THE "REALITY" (External Tools & Frameworks)
 │   │   ├── database/        # Database connection setup
 │   │   ├── repositories/    # SQL Implementations (e.g., PostgresUserRepository). "Here is the SQL to save a user."
-│   │   ├── storage/         # Real Cloud Code (e.g., S3StorageService). "Here is the AWS SDK code."
+│   │   ├── storage/         # Real Cloud Code (e.g., CloudStorageService). "Here is the Supabase Storage SDK code."
 │   │   └── http/            # The Web Framework (Fastify)
 │   │       ├── server.ts    # App entry point
 │   │       ├── routes/      # URL definitions (e.g., POST /auth/signup)
