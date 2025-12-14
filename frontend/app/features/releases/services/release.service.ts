@@ -1,13 +1,35 @@
 import { apiClient } from '~/lib/api';
 import type { Release, CreateReleaseData, UpdateReleaseData, Track, CreateTrackData } from '../types';
 
+export interface PaginatedReleasesResponse {
+  releases: Release[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface GetReleasesParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+}
+
 export const releaseService = {
   async createRelease(data: CreateReleaseData): Promise<Release> {
     return apiClient.post('/api/releases', data);
   },
 
-  async getReleases(): Promise<Release[]> {
-    return apiClient.get('/api/releases');
+  async getReleases(params?: GetReleasesParams): Promise<PaginatedReleasesResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.status) queryParams.append('status', params.status);
+    
+    const query = queryParams.toString();
+    return apiClient.get(`/api/releases${query ? `?${query}` : ''}`);
   },
 
   async getRelease(id: string): Promise<Release> {
