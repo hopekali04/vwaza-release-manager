@@ -2,14 +2,14 @@
 -- Description: Seed initial admin and test artist users
 -- Date: 2025-12-11
 -- 
--- PRODUCTION NOTE: These are placeholder hashes for development.
+-- These are placeholder hashes for development.
 -- To generate real hashes, run: pnpm exec tsx scripts/generate-hashes.ts
 -- Then replace the password_hash values below.
 
 -- Insert Admin User
 -- Email: admin@vwaza.com
 -- Password: Admin@123
--- Hash: bcrypt with 10 rounds (REPLACE THIS IN PRODUCTION)
+-- Hash: bcrypt with 10 rounds
 INSERT INTO users (id, email, password_hash, artist_name, role)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
@@ -22,7 +22,7 @@ VALUES (
 -- Insert Test Artist User
 -- Email: artist@vwaza.com  
 -- Password: Artist@123
--- Hash: bcrypt with 10 rounds (REPLACE THIS IN PRODUCTION)
+-- Hash: bcrypt with 10 rounds
 INSERT INTO users (id, email, password_hash, artist_name, role)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
