@@ -18,11 +18,10 @@ const configSchema = z.object({
     secret: z.string(),
     expiresIn: z.string(),
   }),
-  aws: z.object({
-    region: z.string(),
-    accessKeyId: z.string(),
-    secretAccessKey: z.string(),
-    s3Bucket: z.string(),
+  supabase: z.object({
+    url: z.string(),
+    key: z.string(),
+    bucket: z.string(),
   }),
 });
 
@@ -70,11 +69,10 @@ export function loadConfig(): Config {
       secret: getEnvVar('JWT_SECRET', 'default-dev-secret'),
       expiresIn: getEnvVar('JWT_EXPIRES_IN', '7d'),
     },
-    aws: {
-      region: getEnvVar('AWS_REGION', 'us-east-1'),
-      accessKeyId: getEnvVar('AWS_ACCESS_KEY_ID', ''),
-      secretAccessKey: getEnvVar('AWS_SECRET_ACCESS_KEY', ''),
-      s3Bucket: getEnvVar('AWS_S3_BUCKET', ''),
+    supabase: {
+      url: getEnvVar('SUPABASE_URL', ''),
+      key: getEnvVar('SUPABASE_KEY', ''),
+      bucket: getEnvVar('SUPABASE_BUCKET', 'test-vwaza'),
     },
   };
 
