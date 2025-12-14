@@ -3,6 +3,7 @@
  * Centralized HTTP client with auth token management
  */
 import { showToast } from './toast';
+import { authService } from '~/services/auth.service';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -57,6 +58,20 @@ class ApiClient {
           requestId: errorData.error?.requestId,
           details: errorData.error?.details,
         };
+
+        // Handle auth errors globally: logout and redirect
+        if (apiError.statusCode === 401) {
+          authService.logout();
+          showToast({
+            variant: 'error',
+            title: 'Session expired',
+            message: 'Please log in again.',
+          });
+          // Redirect to login
+          window.location.href = '/login';
+          throw apiError;
+        }
+
         showToast({
           variant: 'error',
           title: 'We could not complete that action',
@@ -131,12 +146,25 @@ class ApiClient {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw {
+        const apiError: ApiError = {
           message: errorData.error?.message || 'Upload failed',
           statusCode: response.status,
           requestId: errorData.error?.requestId,
           details: errorData.error?.details,
-        } as ApiError;
+        };
+
+        if (apiError.statusCode === 401) {
+          authService.logout();
+          showToast({
+            variant: 'error',
+            title: 'Session expired',
+            message: 'Please log in again.',
+          });
+          window.location.href = '/login';
+          throw apiError;
+        }
+
+        throw apiError;
       }
 
       return await response.json();
