@@ -24,8 +24,8 @@ export default function DashboardLayout() {
     } else {
       // Role-based dashboard routing
       if (user?.role === 'ADMIN' && location.pathname === '/dashboard') {
-        navigate('/admin');
-      } else if (user?.role === 'ARTIST' && location.pathname === '/admin') {
+        navigate('/dashboard/admin');
+      } else if (user?.role === 'ARTIST' && location.pathname.startsWith('/dashboard/admin')) {
         navigate('/dashboard');
       }
     }
@@ -41,9 +41,9 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-neutral-200 font-sans pl-64">
+    <div className="min-h-screen bg-black text-neutral-200 font-sans">
       <Sidebar />
-      <main className="p-8 max-w-7xl mx-auto">
+      <main className="ml-20 lg:ml-64 p-8 max-w-7xl transition-all duration-300">
         <Outlet />
       </main>
     </div>
