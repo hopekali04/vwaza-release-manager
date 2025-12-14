@@ -50,23 +50,45 @@ export async function releaseRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['Releases'],
         security: [{ bearerAuth: [] }],
-        description: 'List all releases (artists see their own, admins see all)',
+        description: 'List all releases (artists see their own, admins see all) with pagination',
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', minimum: 1, default: 1 },
+            limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+            status: { type: 'string', nullable: true },
+          },
+        },
         response: {
           200: {
-            description: 'List of releases with track counts',
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                artistId: { type: 'string' },
-                title: { type: 'string' },
-                genre: { type: 'string' },
-                coverArtUrl: { type: 'string' },
-                status: { type: 'string' },
-                trackCount: { type: 'number' },
-                createdAt: { type: 'string' },
-                updatedAt: { type: 'string' },
+            description: 'Paginated list of releases with track counts',
+            type: 'object',
+            properties: {
+              releases: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    artistId: { type: 'string' },
+                    title: { type: 'string' },
+                    genre: { type: 'string' },
+                    coverArtUrl: { type: 'string', nullable: true },
+                    status: { type: 'string' },
+                    trackCount: { type: 'number' },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
+                  },
+                },
+              },
+              pagination: {
+                type: 'object',
+                properties: {
+                  page: { type: 'number' },
+                  limit: { type: 'number' },
+                  total: { type: 'number' },
+                  totalPages: { type: 'number' },
+                },
               },
             },
           },
