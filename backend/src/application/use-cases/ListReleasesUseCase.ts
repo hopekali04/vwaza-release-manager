@@ -1,13 +1,40 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
-import { ReleaseResponseDto } from '@vwaza/shared';
+import { ReleaseResponseDto, ReleaseStatus } from '@vwaza/shared';
+
+export interface ListReleasesParams {
+  artistId?: string;
+  status?: ReleaseStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedReleasesResponse {
+  releases: Array<ReleaseResponseDto & { trackCount: number }>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
 
 export class ListReleasesUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
 
-  async execute(artistId?: string): Promise<Array<ReleaseResponseDto & { trackCount: number }>> {
-    const releases = await this.releaseRepository.getReleasesWithTrackCount(artistId);
+  async execute(params?: ListReleasesParams): Promise<PaginatedReleasesResponse> {
+    const page = params?.page ?? 1;
+    const limit = params?.limit ?? 10;
+    const artistId = params?.artistId;
+    const status = params?.status;
 
-    return releases.map((release) => ({
+    const { releases, total } = await this.releaseRepository.getReleasesWithTrackCountPaginated(
+      page,
+      limit,
+      artistId,
+      status
+    );
+
+    const mappedReleases = releases.map((release) => ({
       id: release.id,
       artistId: release.artistId,
       title: release.title,
@@ -18,5 +45,15 @@ export class ListReleasesUseCase {
       updatedAt: release.updatedAt.toISOString(),
       trackCount: release.trackCount,
     }));
+
+    return {
+      releases: mappedReleases,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }
