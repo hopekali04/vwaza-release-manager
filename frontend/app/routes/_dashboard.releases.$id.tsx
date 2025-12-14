@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useRelease, releaseService, FileUpload, TrackList, TrackForm } from '~/features/releases';
+import { showToast } from '~/lib/toast';
 import { ReviewSummary } from '~/features/releases/components/ReviewSummary';
 import type { Track, CreateTrackData } from '~/features/releases';
 import { Button } from '~/components/ui';
@@ -14,6 +15,15 @@ export default function ReleaseDetailPage() {
   const [showTrackForm, setShowTrackForm] = useState(false);
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const notifyError = (message: string) => {
+    setActionError(message);
+    showToast({
+      variant: 'error',
+      title: 'Action needed',
+      message,
+    });
+  };
 
   if (isLoading && !release) {
     return (
@@ -43,7 +53,7 @@ export default function ReleaseDetailPage() {
       setTracks([...tracks, newTrack]);
       setShowTrackForm(false);
     } catch (err: any) {
-      setActionError(err.message || 'Failed to create track');
+      notifyError(err.message || 'Failed to create track');
     }
   };
 
@@ -53,7 +63,7 @@ export default function ReleaseDetailPage() {
       await releaseService.deleteTrack(trackId);
       setTracks(tracks.filter(t => t.id !== trackId));
     } catch (err: any) {
-      setActionError(err.message || 'Failed to delete track');
+      notifyError(err.message || 'Failed to delete track');
     }
   };
 
@@ -66,7 +76,7 @@ export default function ReleaseDetailPage() {
       ));
       return true;
     } catch (err: any) {
-      setActionError(err.message || 'Failed to upload audio');
+      notifyError(err.message || 'Failed to upload audio');
       return false;
     }
   };
@@ -78,18 +88,18 @@ export default function ReleaseDetailPage() {
     
     // Validation
     if (!release.coverArtUrl) {
-      setActionError('Please upload cover art before submitting');
+      notifyError('Please upload cover art before submitting');
       return;
     }
     
     if (tracks.length === 0) {
-      setActionError('Please add at least one track before submitting');
+      notifyError('Please add at least one track before submitting');
       return;
     }
     
     const tracksWithoutAudio = tracks.filter(t => !t.audioFileUrl);
     if (tracksWithoutAudio.length > 0) {
-      setActionError('All tracks must have audio files before submitting');
+      notifyError('All tracks must have audio files before submitting');
       return;
     }
     
@@ -97,7 +107,7 @@ export default function ReleaseDetailPage() {
       await releaseService.submitRelease(id);
       navigate('/dashboard/releases');
     } catch (err: any) {
-      setActionError(err.message || 'Failed to submit release');
+      notifyError(err.message || 'Failed to submit release');
     }
   };
 
