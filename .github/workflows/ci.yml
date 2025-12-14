@@ -149,7 +149,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test-secret-key
           AWS_S3_BUCKET: test-bucket
           SUPABASE_URL: http://localhost:54321
-          SUPABASE_ANON_KEY: supabase-anon-test-key
+          SUPABASE_KEY: supabase-anon-test-key
           SUPABASE_SERVICE_ROLE_KEY: supabase-service-role-test-key
           SUPABASE_JWT_SECRET: supabase-jwt-test-secret
         run: pnpm db:migrate
@@ -175,7 +175,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test-secret-key
           AWS_S3_BUCKET: test-bucket
           SUPABASE_URL: http://localhost:54321
-          SUPABASE_ANON_KEY: supabase-anon-test-key
+          SUPABASE_KEY: supabase-anon-test-key
           SUPABASE_SERVICE_ROLE_KEY: supabase-service-role-test-key
           SUPABASE_JWT_SECRET: supabase-jwt-test-secret
         run: pnpm test -- --run
