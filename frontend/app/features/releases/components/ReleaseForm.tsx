@@ -41,7 +41,7 @@ export function ReleaseForm({ initialData, onSubmit, onCancel, isLoading }: Rele
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="title" className="block text-sm font-medium text-neutral-400 mb-2">
           Release Title *
         </label>
         <input
@@ -49,40 +49,40 @@ export function ReleaseForm({ initialData, onSubmit, onCancel, isLoading }: Rele
           type="text"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full bg-neutral-900 border border-neutral-800 text-white text-sm rounded-lg px-4 py-2 placeholder-neutral-600 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] transition-colors"
           placeholder="Enter release title"
           disabled={isLoading}
         />
-        {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+        {errors.title && <p className="mt-1 text-sm text-red-400">{errors.title}</p>}
       </div>
 
       <div>
-        <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="genre" className="block text-sm font-medium text-neutral-400 mb-2">
           Genre *
         </label>
         <select
           id="genre"
           value={formData.genre}
           onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full bg-neutral-900 border border-neutral-800 text-white text-sm rounded-lg px-4 py-2 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] transition-colors"
           disabled={isLoading}
         >
-          <option value="">Select a genre</option>
-          <option value="Pop">Pop</option>
-          <option value="Rock">Rock</option>
-          <option value="Hip-Hop">Hip-Hop</option>
-          <option value="R&B">R&B</option>
-          <option value="Electronic">Electronic</option>
-          <option value="Jazz">Jazz</option>
-          <option value="Classical">Classical</option>
-          <option value="Country">Country</option>
-          <option value="Reggae">Reggae</option>
-          <option value="Blues">Blues</option>
-          <option value="Folk">Folk</option>
-          <option value="Alternative">Alternative</option>
-          <option value="Other">Other</option>
+          <option className="bg-neutral-900 text-neutral-400" value="">Select a genre</option>
+          <option className="bg-neutral-900 text-white" value="Pop">Pop</option>
+          <option className="bg-neutral-900 text-white" value="Rock">Rock</option>
+          <option className="bg-neutral-900 text-white" value="Hip-Hop">Hip-Hop</option>
+          <option className="bg-neutral-900 text-white" value="R&B">R&B</option>
+          <option className="bg-neutral-900 text-white" value="Electronic">Electronic</option>
+          <option className="bg-neutral-900 text-white" value="Jazz">Jazz</option>
+          <option className="bg-neutral-900 text-white" value="Classical">Classical</option>
+          <option className="bg-neutral-900 text-white" value="Country">Country</option>
+          <option className="bg-neutral-900 text-white" value="Reggae">Reggae</option>
+          <option className="bg-neutral-900 text-white" value="Blues">Blues</option>
+          <option className="bg-neutral-900 text-white" value="Folk">Folk</option>
+          <option className="bg-neutral-900 text-white" value="Alternative">Alternative</option>
+          <option className="bg-neutral-900 text-white" value="Other">Other</option>
         </select>
-        {errors.genre && <p className="mt-1 text-sm text-red-600">{errors.genre}</p>}
+        {errors.genre && <p className="mt-1 text-sm text-red-400">{errors.genre}</p>}
       </div>
 
       <div className="flex justify-end space-x-3">
