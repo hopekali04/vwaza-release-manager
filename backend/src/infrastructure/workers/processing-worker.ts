@@ -11,7 +11,7 @@ interface ProcessingRelease {
 }
 
 const POLL_INTERVAL = 10000; // Check every 10 seconds
-const SIMULATED_PROCESSING_TIME = 7000; // Simulate 7s processing time per release
+const SIMULATED_PROCESSING_TIME = 7000; // Simulate 7s processing time per release (transcoding + metadata extraction)
 
 export class ProcessingWorker {
   private isRunning = false;
@@ -116,7 +116,7 @@ export class ProcessingWorker {
     // Simulate processing delay (transcoding, metadata extraction, etc.)
     await new Promise((resolve) => setTimeout(resolve, SIMULATED_PROCESSING_TIME));
     
-    // In production, this would include:
+    // later on, this would include:
     // - Audio transcoding to multiple formats
     // - Metadata extraction (duration, bitrate, etc.)
     // - Audio quality validation

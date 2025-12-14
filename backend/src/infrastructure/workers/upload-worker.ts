@@ -71,7 +71,7 @@ export class UploadWorker {
         [UploadJobStatus.UPLOADING, job.id]
       );
 
-      // Simulate upload to S3 (replace with actual S3 upload in production)
+      // Simulate upload to S3 (replace with actual S3 upload later on)
       await this.simulateUpload(job);
 
       // Mark as completed
@@ -93,7 +93,7 @@ export class UploadWorker {
     // Simulate upload delay
     await new Promise((resolve) => setTimeout(resolve, SIMULATED_UPLOAD_TIME));
     
-    // In production, this would be:
+    // later on, this would be:
     // const s3Service = new S3Service();
     // const fileUrl = await s3Service.uploadFile(job.localPath, job.jobType);
     // return fileUrl;
