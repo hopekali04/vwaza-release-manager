@@ -2,6 +2,9 @@ import { getDatabasePool } from '@infrastructure/database';
 import { UploadJobStatus, UploadJobType } from '@vwaza/shared';
 import { createLogger } from '@shared/logger';
 import { loadConfig } from '@config/index';
+import { CloudStorageService } from '@infrastructure/storage/CloudStorageService';
+import { readFile } from 'fs/promises';
+import { basename } from 'path';
 
 interface UploadJob {
   id: string;
@@ -15,11 +18,12 @@ interface UploadJob {
 
 const MAX_RETRIES = 3;
 const POLL_INTERVAL = 5000; // Check for new jobs every 5 seconds
-const SIMULATED_UPLOAD_TIME = 3000; // Simulate 3s upload time
+// const SIMULATED_UPLOAD_TIME = 3000; // Simulate 3s upload time
 
 export class UploadWorker {
   private isRunning = false;
   private logger = createLogger(loadConfig());
+  private cloudStorageService = new CloudStorageService();
 
   async start(): Promise<void> {
     if (this.isRunning) {
@@ -71,8 +75,8 @@ export class UploadWorker {
         [UploadJobStatus.UPLOADING, job.id]
       );
 
-      // Simulate upload to S3 (replace with actual S3 upload later on)
-      await this.simulateUpload(job);
+      // Upload to Supabase
+      const { url, duration } = await this.performUpload(job);
 
       // Mark as completed
       await pool.query(
@@ -81,7 +85,7 @@ export class UploadWorker {
       );
 
       // Update the target entity with the file URL
-      await this.updateEntityWithUrl(job);
+      await this.updateEntityWithUrl(job, url, duration);
 
       this.logger.info({ jobId: job.id }, 'Upload job completed successfully');
     } catch (error) {
@@ -89,31 +93,33 @@ export class UploadWorker {
     }
   }
 
-  private async simulateUpload(_job: UploadJob): Promise<void> {
-    // Simulate upload delay
-    await new Promise((resolve) => setTimeout(resolve, SIMULATED_UPLOAD_TIME));
-    
-    // later on, this would be:
-    // const s3Service = new S3Service();
-    // const fileUrl = await s3Service.uploadFile(job.localPath, job.jobType);
-    // return fileUrl;
+  private async performUpload(job: UploadJob): Promise<{ url: string; duration?: number }> {
+    const buffer = await readFile(job.localPath);
+    const filename = basename(job.localPath);
+    return this.cloudStorageService.uploadFile(buffer, filename, job.jobType);
   }
 
-  private async updateEntityWithUrl(job: UploadJob): Promise<void> {
+  private async updateEntityWithUrl(job: UploadJob, url: string, duration?: number): Promise<void> {
     const pool = getDatabasePool();
-    const mockUrl = `https://s3.amazonaws.com/vwaza-uploads/${job.id}`;
 
     if (job.jobType === UploadJobType.AUDIO) {
-      // Update track's audio_file_url
-      await pool.query(
-        'UPDATE tracks SET audio_file_url = $1 WHERE id = $2',
-        [mockUrl, job.targetEntityId]
-      );
+      // Update track's audio_file_url and duration if available
+      if (duration) {
+         await pool.query(
+          'UPDATE tracks SET audio_file_url = $1, duration_seconds = $2 WHERE id = $3',
+          [url, duration, job.targetEntityId]
+        );
+      } else {
+        await pool.query(
+          'UPDATE tracks SET audio_file_url = $1 WHERE id = $2',
+          [url, job.targetEntityId]
+        );
+      }
     } else if (job.jobType === UploadJobType.COVER_ART) {
       // Update release's cover_art_url
       await pool.query(
         'UPDATE releases SET cover_art_url = $1 WHERE id = $2',
-        [mockUrl, job.targetEntityId]
+        [url, job.targetEntityId]
       );
     }
   }
