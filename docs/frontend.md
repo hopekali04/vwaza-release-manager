@@ -165,9 +165,11 @@ layout("routes/_dashboard.tsx", [
 - Navigation to approval queue
 
 **Admin Approval Queue** (`_dashboard.admin.approvals.tsx`):
-- List of releases pending review
-- Approve/reject actions
-- Release details preview
+- View toggle between "Pending Approvals" and "All Releases"
+- Paginated list with configurable page size (10 items default)
+- Approve/reject actions with confirm modals
+- Release details preview with track expansion
+- Pagination controls: previous/next buttons, page numbers, total count display
 
 ### Sidebar Navigation
 
@@ -351,10 +353,10 @@ Password: Test@123
 - [ ] Email verification
 
 ### API Endpoints Needed
-- `GET /api/releases` - List releases
+- `GET /api/releases` - List releases (paginated with optional status filter: `?page=1&limit=10&status=PENDING_REVIEW`)
 - `POST /api/releases` - Create release
 - `PUT /api/releases/:id` - Update release
-- `GET /api/admin/pending` - Pending approvals
+- `GET /api/admin/pending` - Pending approvals (now paginated in admin panel)
 - `PUT /api/admin/releases/:id/approve` - Approve release
 - `PUT /api/admin/releases/:id/reject` - Reject release
 - `GET /api/users` - List users (admin)
