@@ -16,6 +16,7 @@ import {
   updateReleaseRequestSchema,
   UserRole,
 } from '@vwaza/shared';
+import { ResourceNotFoundError, InvalidStateError } from '@application/errors/ApplicationErrors.js';
 
 export class ReleaseController {
   private releaseRepository = new ReleaseRepository();
@@ -155,7 +156,7 @@ export class ReleaseController {
       const approvedRelease = await useCase.execute(id);
       reply.send(approvedRelease);
     } catch (error) {
-      reply.status(400).send({ error: (error as Error).message });
+      this.handleUseCaseError(reply, error as Error);
     }
   }
 
@@ -169,8 +170,22 @@ export class ReleaseController {
       const rejectedRelease = await useCase.execute(id);
       reply.send(rejectedRelease);
     } catch (error) {
-      reply.status(400).send({ error: (error as Error).message });
+      this.handleUseCaseError(reply, error as Error);
     }
+  }
+
+  private handleUseCaseError(reply: FastifyReply, error: Error) {
+    if (error instanceof ResourceNotFoundError) {
+      reply.status(404).send({ error: error.message });
+      return;
+    }
+
+    if (error instanceof InvalidStateError) {
+      reply.status(409).send({ error: error.message });
+      return;
+    }
+
+    reply.status(400).send({ error: error.message });
   }
 
   async uploadCoverArt(
