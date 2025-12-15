@@ -1,4 +1,5 @@
 import { FastifyReply } from 'fastify';
+import { z } from 'zod';
 import { AuthenticatedRequest } from '@infrastructure/auth/middleware.js';
 import { ReleaseRepository } from '@infrastructure/repositories/ReleaseRepository.js';
 import { TrackRepository } from '@infrastructure/repositories/TrackRepository.js';
@@ -15,8 +16,15 @@ import {
   createReleaseRequestSchema,
   updateReleaseRequestSchema,
   UserRole,
+  ReleaseStatus,
 } from '@vwaza/shared';
 import { ResourceNotFoundError, InvalidStateError } from '@application/errors/ApplicationErrors.js';
+
+const listReleasesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  status: z.nativeEnum(ReleaseStatus).optional(),
+});
 
 export class ReleaseController {
   constructor(
@@ -51,17 +59,22 @@ export class ReleaseController {
   }
 
   async listReleases(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
+    const parseResult = listReleasesQuerySchema.safeParse(request.query);
+
+    if (!parseResult.success) {
+      reply.status(400).send({
+        error: 'Validation failed',
+        details: parseResult.error.flatten(),
+      });
+      return;
+    }
+
     const useCase = new ListReleasesUseCase(this.releaseRepository);
-    
-    // Parse query params
-    const query = request.query as any;
-    const page = query.page ? parseInt(query.page) : 1;
-    const limit = query.limit ? parseInt(query.limit) : 10;
-    const status = query.status as any;
-    
+    const { page, limit, status } = parseResult.data;
+
     // Artists see only their releases, admins see all
     const artistId = request.user!.role === UserRole.ARTIST ? request.user!.userId : undefined;
-    
+
     const result = await useCase.execute({
       artistId,
       status,
