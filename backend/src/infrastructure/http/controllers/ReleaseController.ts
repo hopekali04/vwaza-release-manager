@@ -200,7 +200,34 @@ export class ReleaseController {
     }
   }
 
+    async subscribeToUpdates(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
+    // Set SSE headers
+    reply.header('Content-Type', 'text/event-stream');
+    reply.header('Cache-Control', 'no-cache');
+    reply.header('Connection', 'keep-alive');
 
+    // Fetch initial release list
+    const useCase = new ListReleasesUseCase(this.releaseRepository);
+    const artistId = request.user!.role === UserRole.ARTIST ? request.user!.userId : undefined;
+    const result = await useCase.execute({ artistId, page: 1, limit: 1000 });
+
+    // Send initial data
+    reply.raw.write(`data: ${JSON.stringify({ type: 'initial', releases: result.releases })}\n\n`);
+
+    // Keep connection alive with heartbeat
+    const heartbeatInterval = setInterval(() => {
+      try {
+        reply.raw.write(`: heartbeat\n\n`);
+      } catch (error) {
+        clearInterval(heartbeatInterval);
+      }
+    }, 30000); // 30 second heartbeat
+
+    // Cleanup on disconnect
+    request.socket.on('close', () => {
+      clearInterval(heartbeatInterval);
+    });
+  }
 
   private async verifyReleaseAccess(
     request: AuthenticatedRequest,
