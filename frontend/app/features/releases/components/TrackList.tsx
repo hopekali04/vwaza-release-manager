@@ -1,4 +1,6 @@
+import React from 'react';
 import { Button } from '~/components/ui';
+import { ConfirmDialog } from '~/components/ConfirmDialog';
 import type { Track } from '../types';
 
 interface TrackListProps {
@@ -9,6 +11,9 @@ interface TrackListProps {
 }
 
 export function TrackList({ tracks, onDelete, onEdit, editable = true }: TrackListProps) {
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   if (tracks.length === 0) {
     return (
       <div className="text-center py-8 bg-neutral-900/50 backdrop-blur-sm border border-white/5 rounded-xl">
@@ -72,11 +77,7 @@ export function TrackList({ tracks, onDelete, onEdit, editable = true }: TrackLi
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this track?')) {
-                      onDelete(track.id);
-                    }
-                  }}
+                  onClick={() => setPendingDeleteId(track.id)}
                 >
                   Delete
                 </Button>
@@ -85,6 +86,30 @@ export function TrackList({ tracks, onDelete, onEdit, editable = true }: TrackLi
           )}
         </div>
       ))}
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete this track?"
+        description="This action removes the track from the release and cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        isLoading={isDeleting}
+        onConfirm={async () => {
+          if (!pendingDeleteId || !onDelete) return;
+          setIsDeleting(true);
+          try {
+            await Promise.resolve(onDelete(pendingDeleteId));
+          } finally {
+            setIsDeleting(false);
+            setPendingDeleteId(null);
+          }
+        }}
+        onClose={() => {
+          if (isDeleting) return;
+          setPendingDeleteId(null);
+        }}
+      />
     </div>
   );
 }
