@@ -19,9 +19,11 @@ import {
 import { ResourceNotFoundError, InvalidStateError } from '@application/errors/ApplicationErrors.js';
 
 export class ReleaseController {
-  private releaseRepository = new ReleaseRepository();
-  private trackRepository = new TrackRepository();
-  private cloudStorage = new CloudStorageService();
+  constructor(
+    private readonly releaseRepository: ReleaseRepository,
+    private readonly trackRepository: TrackRepository,
+    private readonly cloudStorage: CloudStorageService
+  ) {}
 
   async createRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const result = createReleaseRequestSchema.safeParse(request.body);

@@ -1,10 +1,16 @@
 import { FastifyInstance } from 'fastify';
 import { authenticate, authorize } from '@infrastructure/auth/middleware.js';
 import { ReleaseController } from '../controllers/ReleaseController.js';
+import { ReleaseRepository } from '@infrastructure/repositories/ReleaseRepository.js';
+import { TrackRepository } from '@infrastructure/repositories/TrackRepository.js';
+import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { UserRole } from '@vwaza/shared';
 
 export async function releaseRoutes(fastify: FastifyInstance) {
-  const controller = new ReleaseController();
+  const releaseRepository = new ReleaseRepository();
+  const trackRepository = new TrackRepository();
+  const cloudStorage = new CloudStorageService();
+  const controller = new ReleaseController(releaseRepository, trackRepository, cloudStorage);
 
   // Artist routes - create, read, update, delete their own releases
   fastify.post(
