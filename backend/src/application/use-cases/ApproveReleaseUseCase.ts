@@ -1,6 +1,7 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { ReleaseStatus, ReleaseResponseDto } from '@vwaza/shared';
 import { ReleaseMapper } from '@application/mappers/ReleaseMapper.js';
+import { ResourceNotFoundError, InvalidStateError } from '@application/errors/ApplicationErrors.js';
 
 export class ApproveReleaseUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
@@ -9,11 +10,11 @@ export class ApproveReleaseUseCase {
     const release = await this.releaseRepository.findById(releaseId);
     
     if (!release) {
-      throw new Error('Release not found');
+      throw new ResourceNotFoundError('Release', releaseId);
     }
 
     if (release.status !== ReleaseStatus.PENDING_REVIEW) {
-      throw new Error('Only releases pending review can be approved');
+      throw new InvalidStateError('Only releases pending review can be approved');
     }
 
     const updatedRelease = await this.releaseRepository.updateStatus(
@@ -22,7 +23,7 @@ export class ApproveReleaseUseCase {
     );
 
     if (!updatedRelease) {
-      throw new Error('Failed to approve release');
+      throw new InvalidStateError('Failed to approve release');
     }
 
     return ReleaseMapper.toDTO(updatedRelease);
