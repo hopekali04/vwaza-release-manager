@@ -73,6 +73,13 @@ export const authService = {
   },
 
   /**
+   * Get the stored authentication token
+   */
+  getToken(): string | null {
+    return localStorage.getItem("vwaza_token");
+  },
+
+  /**
    * Store authentication data in localStorage
    */
   storeAuthData(response: AuthResponseDto): void {
