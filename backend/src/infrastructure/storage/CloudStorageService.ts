@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { parseBuffer } from 'music-metadata';
+import { lookup as mimeLookup } from 'mime-types';
 import { createLogger } from '@shared/logger';
 import { loadConfig } from '@config/index';
 import { UploadJobType } from '@vwaza/shared';
@@ -33,17 +34,15 @@ export class CloudStorageService {
     filename: string,
     type: UploadJobType
   ): Promise<{ url: string; duration?: number }> {
-    const fileExt = filename.split('.').pop();
+    const fileExt = filename.split('.').pop()?.toLowerCase();
     const uniqueId = randomUUID();
+    const safeExt = fileExt ?? 'bin';
     // Organize files by type: audio/uuid.mp3 or cover_art/uuid.jpg
-    const path = `${type.toLowerCase()}/${uniqueId}.${fileExt}`;
+    const path = `${type.toLowerCase()}/${uniqueId}.${safeExt}`;
 
-    // Determine content type based on extension (basic mapping)
-    let contentType = 'application/octet-stream';
-    if (fileExt === 'mp3') contentType = 'audio/mpeg';
-    else if (fileExt === 'wav') contentType = 'audio/wav';
-    else if (['jpg', 'jpeg'].includes(fileExt || '')) contentType = 'image/jpeg';
-    else if (fileExt === 'png') contentType = 'image/png';
+    // Determine content type using mime-types for broader coverage
+    const lookedUp = mimeLookup(filename);
+    const contentType = typeof lookedUp === 'string' ? lookedUp : 'application/octet-stream';
 
     const { error } = await this.supabase.storage
       .from(this.bucket)
