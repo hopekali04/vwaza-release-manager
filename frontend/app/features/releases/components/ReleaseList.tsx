@@ -1,6 +1,8 @@
+import React from 'react';
 import { Link } from 'react-router';
 import type { Release } from '../types';
 import { Button } from '~/components/ui';
+import { ConfirmDialog } from '~/components/ConfirmDialog';
 
 interface ReleaseListProps {
   releases: Release[];
@@ -18,6 +20,9 @@ const statusColors = {
 };
 
 export function ReleaseList({ releases, onDelete, onSubmit, showActions = true }: ReleaseListProps) {
+  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
   if (releases.length === 0) {
     return (
       <div className="text-center py-12">
@@ -87,12 +92,7 @@ export function ReleaseList({ releases, onDelete, onSubmit, showActions = true }
                 {release.status === 'DRAFT' && onDelete && (
                   <Button
                     variant="danger"
-                    
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this release?')) {
-                        onDelete(release.id);
-                      }
-                    }}
+                    onClick={() => setPendingDeleteId(release.id)}
                   >
                     Delete
                   </Button>
@@ -102,6 +102,30 @@ export function ReleaseList({ releases, onDelete, onSubmit, showActions = true }
           </div>
         </div>
       ))}
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete this release?"
+        description="Deleting a release removes all associated tracks and cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        isLoading={isDeleting}
+        onConfirm={async () => {
+          if (!pendingDeleteId || !onDelete) return;
+          setIsDeleting(true);
+          try {
+            await Promise.resolve(onDelete(pendingDeleteId));
+          } finally {
+            setIsDeleting(false);
+            setPendingDeleteId(null);
+          }
+        }}
+        onClose={() => {
+          if (isDeleting) return;
+          setPendingDeleteId(null);
+        }}
+      />
     </div>
   );
 }
