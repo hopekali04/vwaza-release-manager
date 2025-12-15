@@ -1,6 +1,7 @@
 import { ITrackRepository } from '@domain/repositories/ITrackRepository.js';
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { CreateTrackRequestDto, TrackResponseDto, ReleaseStatus } from '@vwaza/shared';
+import { TrackMapper } from '@application/mappers/TrackMapper.js';
 
 export class CreateTrackUseCase {
   constructor(
@@ -27,16 +28,6 @@ export class CreateTrackUseCase {
       isrc: request.isrc,
     });
 
-    return {
-      id: track.id,
-      releaseId: track.releaseId,
-      title: track.title,
-      isrc: track.isrc,
-      audioFileUrl: track.audioFileUrl,
-      durationSeconds: track.durationSeconds,
-      trackOrder: track.trackOrder,
-      createdAt: track.createdAt.toISOString(),
-      updatedAt: track.updatedAt.toISOString(),
-    };
+    return TrackMapper.toDTO(track);
   }
 }

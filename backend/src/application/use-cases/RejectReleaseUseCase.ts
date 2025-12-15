@@ -1,5 +1,6 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { ReleaseStatus, ReleaseResponseDto } from '@vwaza/shared';
+import { ReleaseMapper } from '@application/mappers/ReleaseMapper.js';
 
 export class RejectReleaseUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
@@ -24,15 +25,6 @@ export class RejectReleaseUseCase {
       throw new Error('Failed to reject release');
     }
 
-    return {
-      id: updatedRelease.id,
-      artistId: updatedRelease.artistId,
-      title: updatedRelease.title,
-      genre: updatedRelease.genre,
-      coverArtUrl: updatedRelease.coverArtUrl,
-      status: updatedRelease.status,
-      createdAt: updatedRelease.createdAt.toISOString(),
-      updatedAt: updatedRelease.updatedAt.toISOString(),
-    };
+    return ReleaseMapper.toDTO(updatedRelease);
   }
 }

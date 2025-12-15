@@ -1,5 +1,6 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { PaginatedReleasesResponse, GetReleasesParams as ListReleasesParams } from '@vwaza/shared';
+import { ReleaseMapper } from '@application/mappers/ReleaseMapper.js';
 
 export class ListReleasesUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
@@ -18,14 +19,7 @@ export class ListReleasesUseCase {
     );
 
     const mappedReleases = releases.map((release) => ({
-      id: release.id,
-      artistId: release.artistId,
-      title: release.title,
-      genre: release.genre,
-      coverArtUrl: release.coverArtUrl,
-      status: release.status,
-      createdAt: release.createdAt.toISOString(),
-      updatedAt: release.updatedAt.toISOString(),
+      ...ReleaseMapper.toDTO(release),
       trackCount: release.trackCount,
     }));
 

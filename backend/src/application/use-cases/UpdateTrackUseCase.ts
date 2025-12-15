@@ -1,5 +1,6 @@
 import { ITrackRepository } from '@domain/repositories/ITrackRepository.js';
 import { UpdateTrackRequestDto, TrackResponseDto } from '@vwaza/shared';
+import { TrackMapper } from '@application/mappers/TrackMapper.js';
 
 export class UpdateTrackUseCase {
   constructor(private trackRepository: ITrackRepository) {}
@@ -16,16 +17,6 @@ export class UpdateTrackUseCase {
       return null;
     }
 
-    return {
-      id: track.id,
-      releaseId: track.releaseId,
-      title: track.title,
-      isrc: track.isrc,
-      audioFileUrl: track.audioFileUrl,
-      durationSeconds: track.durationSeconds,
-      trackOrder: track.trackOrder,
-      createdAt: track.createdAt.toISOString(),
-      updatedAt: track.updatedAt.toISOString(),
-    };
+    return TrackMapper.toDTO(track);
   }
 }

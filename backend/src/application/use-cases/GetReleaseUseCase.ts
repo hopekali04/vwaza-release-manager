@@ -1,5 +1,6 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { ReleaseResponseDto } from '@vwaza/shared';
+import { ReleaseMapper } from '@application/mappers/ReleaseMapper.js';
 
 export class GetReleaseUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
@@ -11,15 +12,6 @@ export class GetReleaseUseCase {
       return null;
     }
 
-    return {
-      id: release.id,
-      artistId: release.artistId,
-      title: release.title,
-      genre: release.genre,
-      coverArtUrl: release.coverArtUrl,
-      status: release.status,
-      createdAt: release.createdAt.toISOString(),
-      updatedAt: release.updatedAt.toISOString(),
-    };
+    return ReleaseMapper.toDTO(release);
   }
 }
