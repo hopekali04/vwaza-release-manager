@@ -4,7 +4,6 @@ import { ReleaseRepository } from '@infrastructure/repositories/ReleaseRepositor
 import { TrackRepository } from '@infrastructure/repositories/TrackRepository.js';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { CreateReleaseUseCase } from '@application/use-cases/CreateReleaseUseCase.js';
-import { GetReleaseUseCase } from '@application/use-cases/GetReleaseUseCase.js';
 import { ListReleasesUseCase } from '@application/use-cases/ListReleasesUseCase.js';
 import { UpdateReleaseUseCase } from '@application/use-cases/UpdateReleaseUseCase.js';
 import { DeleteReleaseUseCase } from '@application/use-cases/DeleteReleaseUseCase.js';
@@ -42,19 +41,8 @@ export class ReleaseController {
 
   async getRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const { id } = request.params as { id: string };
-    const useCase = new GetReleaseUseCase(this.releaseRepository);
-    const release = await useCase.execute(id);
-
-    if (!release) {
-      reply.status(404).send({ error: 'Release not found' });
-      return;
-    }
-
-    // Artists can only view their own releases, admins can view all
-    if (request.user!.role === UserRole.ARTIST && release.artistId !== request.user!.userId) {
-      reply.status(403).send({ error: 'Forbidden' });
-      return;
-    }
+    const release = await this.verifyReleaseAccess(request, reply, id);
+    if (!release) return;
 
     reply.send(release);
   }
@@ -97,16 +85,8 @@ export class ReleaseController {
 
     // Verify ownership
     const { id } = request.params as { id: string };
-    const release = await this.releaseRepository.findById(id);
-    if (!release) {
-      reply.status(404).send({ error: 'Release not found' });
-      return;
-    }
-
-    if (request.user!.role === UserRole.ARTIST && release.artistId !== request.user!.userId) {
-      reply.status(403).send({ error: 'Forbidden' });
-      return;
-    }
+    const release = await this.verifyReleaseAccess(request, reply, id);
+    if (!release) return;
 
     const useCase = new UpdateReleaseUseCase(this.releaseRepository);
     const updatedRelease = await useCase.execute(id, result.data);
@@ -125,16 +105,8 @@ export class ReleaseController {
   ): Promise<void> {
     // Verify ownership
     const { id } = request.params as { id: string };
-    const release = await this.releaseRepository.findById(id);
-    if (!release) {
-      reply.status(404).send({ error: 'Release not found' });
-      return;
-    }
-
-    if (request.user!.role === UserRole.ARTIST && release.artistId !== request.user!.userId) {
-      reply.status(403).send({ error: 'Forbidden' });
-      return;
-    }
+    const release = await this.verifyReleaseAccess(request, reply, id);
+    if (!release) return;
 
     const useCase = new DeleteReleaseUseCase(this.releaseRepository);
     const deleted = await useCase.execute(id);
@@ -214,16 +186,8 @@ export class ReleaseController {
 
     // Verify ownership
     const { id } = request.params as { id: string };
-    const release = await this.releaseRepository.findById(id);
-    if (!release) {
-      reply.status(404).send({ error: 'Release not found' });
-      return;
-    }
-
-    if (request.user!.role === UserRole.ARTIST && release.artistId !== request.user!.userId) {
-      reply.status(403).send({ error: 'Forbidden' });
-      return;
-    }
+    const release = await this.verifyReleaseAccess(request, reply, id);
+    if (!release) return;
 
     try {
       const buffer = await data.toBuffer();
@@ -234,5 +198,27 @@ export class ReleaseController {
     } catch (error) {
       reply.status(400).send({ error: (error as Error).message });
     }
+  }
+
+
+
+  private async verifyReleaseAccess(
+    request: AuthenticatedRequest,
+    reply: FastifyReply,
+    releaseId: string
+  ) {
+    const release = await this.releaseRepository.findById(releaseId);
+
+    if (!release) {
+      reply.status(404).send({ error: 'Release not found' });
+      return null;
+    }
+
+    if (request.user!.role === UserRole.ARTIST && release.artistId !== request.user!.userId) {
+      reply.status(403).send({ error: 'Forbidden' });
+      return null;
+    }
+
+    return release;
   }
 }
