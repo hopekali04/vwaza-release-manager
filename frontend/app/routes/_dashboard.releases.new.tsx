@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ReleaseForm, useReleases } from '~/features/releases';
+import type { CreateReleaseData } from '~/features/releases';
 import { WizardStepper } from '~/features/releases/components/WizardStepper';
 
 export default function NewReleasePage() {
@@ -8,7 +9,7 @@ export default function NewReleasePage() {
   const { createRelease, isLoading } = useReleases();
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: CreateReleaseData) => {
     setError(null);
     const release = await createRelease(data);
     
