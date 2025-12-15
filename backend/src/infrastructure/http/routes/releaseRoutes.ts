@@ -8,7 +8,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
 
   // Artist routes - create, read, update, delete their own releases
   fastify.post(
-    '/api/releases',
+    '/releases',
     {
       preHandler: [authenticate],
       schema: {
@@ -44,7 +44,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.get(
-    '/api/releases',
+    '/releases',
     {
       preHandler: [authenticate],
       schema: {
@@ -99,7 +99,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.get(
-    '/api/releases/:id',
+    '/releases/:id',
     {
       preHandler: [authenticate],
       schema: {
@@ -118,7 +118,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.patch(
-    '/api/releases/:id',
+    '/releases/:id',
     {
       preHandler: [authenticate],
       schema: {
@@ -137,7 +137,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.delete(
-    '/api/releases/:id',
+    '/releases/:id',
     {
       preHandler: [authenticate],
       schema: {
@@ -162,7 +162,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    '/api/releases/:id/submit',
+    '/releases/:id/submit',
     {
       preHandler: [authenticate],
       schema: {
@@ -181,7 +181,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    '/api/releases/:id/upload-cover',
+    '/releases/:id/upload-cover',
     {
       preHandler: [authenticate],
       schema: {
@@ -202,7 +202,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
 
   // Admin-only routes
   fastify.post(
-    '/api/admin/releases/:id/approve',
+    '/admin/releases/:id/approve',
     {
       preHandler: [authenticate, authorize(UserRole.ADMIN)],
       schema: {
@@ -221,7 +221,7 @@ export async function releaseRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    '/api/admin/releases/:id/reject',
+    '/admin/releases/:id/reject',
     {
       preHandler: [authenticate, authorize(UserRole.ADMIN)],
       schema: {
@@ -237,5 +237,19 @@ export async function releaseRoutes(fastify: FastifyInstance) {
       },
     },
     controller.rejectRelease.bind(controller)
+  );
+
+  // SSE endpoint - Subscribe to release updates
+  fastify.get(
+    '/releases/subscribe',
+    {
+      preHandler: [authenticate],
+      schema: {
+        tags: ['Releases'],
+        security: [{ bearerAuth: [] }],
+        description: 'Subscribe to real-time release updates via Server-Sent Events',
+      },
+    },
+    controller.subscribeToUpdates.bind(controller)
   );
 }

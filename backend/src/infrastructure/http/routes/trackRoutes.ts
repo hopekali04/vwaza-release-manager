@@ -6,7 +6,7 @@ export async function trackRoutes(fastify: FastifyInstance) {
   const controller = new TrackController();
 
   fastify.post(
-    '/api/releases/:releaseId/tracks',
+    '/releases/:releaseId/tracks',
     {
       preHandler: [authenticate],
       schema: {
@@ -34,7 +34,7 @@ export async function trackRoutes(fastify: FastifyInstance) {
   );
 
   fastify.get(
-    '/api/releases/:releaseId/tracks',
+    '/releases/:releaseId/tracks',
     {
       preHandler: [authenticate],
       schema: {
@@ -53,7 +53,7 @@ export async function trackRoutes(fastify: FastifyInstance) {
   );
 
   fastify.patch(
-    '/api/tracks/:id',
+    '/tracks/:id',
     {
       preHandler: [authenticate],
       schema: {
@@ -72,7 +72,7 @@ export async function trackRoutes(fastify: FastifyInstance) {
   );
 
   fastify.delete(
-    '/api/tracks/:id',
+    '/tracks/:id',
     {
       preHandler: [authenticate],
       schema: {
@@ -97,7 +97,7 @@ export async function trackRoutes(fastify: FastifyInstance) {
   );
 
   fastify.post(
-    '/api/tracks/:id/upload-audio',
+    '/tracks/:id/upload-audio',
     {
       preHandler: [authenticate],
       schema: {

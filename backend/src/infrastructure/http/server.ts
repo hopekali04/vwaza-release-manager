@@ -103,10 +103,10 @@ async function buildServer() {
     staticCSP: true,
   });
 
-  // Register routes
-  await server.register(authRoutes);
-  await server.register(releaseRoutes);
-  await server.register(trackRoutes);
+  // Register routes with prefixes
+  await server.register(authRoutes, { prefix: '/api/auth' });
+  await server.register(releaseRoutes, { prefix: '/api' });
+  await server.register(trackRoutes, { prefix: '/api' });
 
   server.addHook('onResponse', async (request, reply) => {
     const responseTime = reply.elapsedTime;

@@ -7,9 +7,9 @@ import { AuthController } from '../controllers/AuthController.js';
 export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   const authController = new AuthController();
 
-  // POST /api/auth/signup
+  // POST /signup
   fastify.post(
-    '/api/auth/signup',
+    '/signup',
     {
       schema: {
         description: 'Create a new user account',
@@ -120,9 +120,9 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     authController.signUp.bind(authController)
   );
 
-  // POST /api/auth/signin
+  // POST /signin
   fastify.post(
-    '/api/auth/signin',
+    '/signin',
     {
       schema: {
         description: 'Authenticate user and return access token',
