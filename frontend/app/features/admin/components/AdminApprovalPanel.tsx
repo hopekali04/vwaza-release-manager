@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '~/components/ui';
+import { ConfirmDialog } from '~/components/ConfirmDialog';
 import type { Release, Track, PaginatedReleasesResponse } from '~/features/releases';
 import { releaseService } from '~/features/releases';
 import { ChevronDown, ChevronUp, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -23,6 +24,10 @@ export function AdminApprovalPanel() {
   const [expandedReleaseId, setExpandedReleaseId] = useState<string | null>(null);
   const [tracks, setTracks] = useState<Record<string, Track[]>>({});
   const [loadingTracks, setLoadingTracks] = useState<Record<string, boolean>>({});
+
+  // Confirmation state
+  const [pendingRejectId, setPendingRejectId] = useState<string | null>(null);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   // Modal state
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
@@ -86,15 +91,22 @@ export function AdminApprovalPanel() {
   };
 
   const handleReject = async (id: string) => {
-    if (!confirm('Are you sure you want to reject this release?')) return;
-    
+    setPendingRejectId(id);
+  };
+
+  const confirmReject = async () => {
+    if (!pendingRejectId) return;
     setError(null);
+    setIsRejecting(true);
     try {
-      await releaseService.rejectRelease(id);
-      setReleases(releases.filter(r => r.id !== id));
-      if (expandedReleaseId === id) setExpandedReleaseId(null);
+      await releaseService.rejectRelease(pendingRejectId);
+      setReleases(releases.filter(r => r.id !== pendingRejectId));
+      if (expandedReleaseId === pendingRejectId) setExpandedReleaseId(null);
     } catch (err: any) {
       setError(err.message || 'Failed to reject release');
+    } finally {
+      setIsRejecting(false);
+      setPendingRejectId(null);
     }
   };
 
@@ -332,6 +344,21 @@ export function AdminApprovalPanel() {
         track={selectedTrack}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={pendingRejectId !== null}
+        title="Reject this release?"
+        description="This will move the release to a rejected state. Artists will need to resubmit after addressing feedback."
+        confirmLabel="Reject"
+        cancelLabel="Cancel"
+        destructive
+        isLoading={isRejecting}
+        onConfirm={confirmReject}
+        onClose={() => {
+          if (isRejecting) return;
+          setPendingRejectId(null);
+        }}
       />
     </div>
   );
