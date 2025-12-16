@@ -3,7 +3,7 @@
  * Protected layout with sidebar navigation
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useAuth } from '~/features/auth';
 import { Sidebar } from '~/components/Sidebar';
@@ -13,6 +13,7 @@ export default function DashboardLayout() {
   const { isAuthenticated, isAuthReady, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   useEffect(() => {
     // Wait until auth state is confirmed
@@ -24,8 +25,8 @@ export default function DashboardLayout() {
     } else {
       // Role-based dashboard routing
       if (user?.role === 'ADMIN' && location.pathname === '/dashboard') {
-        navigate('/admin');
-      } else if (user?.role === 'ARTIST' && location.pathname === '/admin') {
+        navigate('/dashboard/admin');
+      } else if (user?.role === 'ARTIST' && location.pathname.startsWith('/dashboard/admin')) {
         navigate('/dashboard');
       }
     }
@@ -41,9 +42,9 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-neutral-200 font-sans pl-64">
-      <Sidebar />
-      <main className="p-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-neutral-200 font-sans">
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      <main className={`${isSidebarCollapsed ? 'pl-32' : 'pl-80'} pr-8 py-8 transition-all duration-300`}>
         <Outlet />
       </main>
     </div>

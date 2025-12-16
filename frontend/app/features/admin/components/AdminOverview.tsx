@@ -3,12 +3,91 @@
  * Main admin dashboard with system stats
  */
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { Card } from '~/components/ui';
 import { Users, Disc, AlertCircle, TrendingUp } from 'lucide-react';
+import { releaseService } from '~/features/releases';
+import { ReleaseStatus } from '@vwaza/shared';
+
+type AdminStats = {
+  totalReleases: number;
+  pendingReview: number;
+  published: number;
+  processing: number;
+};
 
 export function AdminOverview() {
+  const [stats, setStats] = useState<AdminStats>({
+    totalReleases: 0,
+    pendingReview: 0,
+    published: 0,
+    processing: 0,
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchCount = async (status?: ReleaseStatus): Promise<number> => {
+    const response = await releaseService.getReleases({ status, limit: 1, page: 1 });
+    return response.pagination.total;
+  };
+
+  const fetchStats = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [totalReleases, pendingReview, published, processing] = await Promise.all([
+        fetchCount(),
+        fetchCount(ReleaseStatus.PENDING_REVIEW),
+        fetchCount(ReleaseStatus.PUBLISHED),
+        fetchCount(ReleaseStatus.PROCESSING),
+      ]);
+
+      setStats({ totalReleases, pendingReview, published, processing });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load admin stats';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const statCards = [
+    {
+      label: 'Total Releases',
+      value: stats.totalReleases.toLocaleString(),
+      change: isLoading ? 'Loading…' : 'Across all artists',
+      icon: Disc,
+      color: 'text-[#ccff00]',
+    },
+    {
+      label: 'Pending Reviews',
+      value: stats.pendingReview.toLocaleString(),
+      change: isLoading ? 'Loading…' : 'Awaiting admin action',
+      icon: AlertCircle,
+      color: 'text-yellow-400',
+      link: '/admin/approvals',
+    },
+    {
+      label: 'Processing Releases',
+      value: stats.processing.toLocaleString(),
+      change: isLoading ? 'Loading…' : 'In ingestion pipeline',
+      icon: TrendingUp,
+      color: 'text-blue-400',
+    },
+    {
+      label: 'Published Releases',
+      value: stats.published.toLocaleString(),
+      change: isLoading ? 'Loading…' : 'Live in catalog',
+      icon: Users,
+      color: 'text-green-400',
+    },
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
@@ -17,39 +96,15 @@ export function AdminOverview() {
         <p className="text-neutral-400 mt-1">System statistics and recent activity</p>
       </div>
 
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { 
-            label: 'Total Users', 
-            value: '1,247', 
-            change: '+45 this week', 
-            icon: Users,
-            color: 'text-blue-400'
-          },
-          { 
-            label: 'Total Releases', 
-            value: '3,891', 
-            change: '+123 this month', 
-            icon: Disc,
-            color: 'text-[#ccff00]'
-          },
-          { 
-            label: 'Pending Reviews', 
-            value: '28', 
-            change: 'Needs attention', 
-            icon: AlertCircle,
-            color: 'text-yellow-400',
-            link: '/admin/approvals'
-          },
-          { 
-            label: 'Total Streams', 
-            value: '5.2M', 
-            change: '+18% vs last month', 
-            icon: TrendingUp,
-            color: 'text-green-400'
-          },
-        ].map((stat, i) => (
+        {statCards.map((stat, i) => (
           <Card key={i} className="p-6">
             <div className="flex items-start justify-between mb-4">
               <stat.icon className={`w-8 h-8 ${stat.color}`} />
@@ -81,7 +136,9 @@ export function AdminOverview() {
           >
             <AlertCircle className="w-6 h-6 text-yellow-400 mb-3" />
             <h4 className="font-semibold text-white mb-1">Review Submissions</h4>
-            <p className="text-sm text-neutral-400">28 releases pending approval</p>
+            <p className="text-sm text-neutral-400">
+              {isLoading ? 'Loading…' : `${stats.pendingReview} releases pending approval`}
+            </p>
           </Link>
 
           <Link

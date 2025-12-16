@@ -1,10 +1,15 @@
 import 'dotenv/config';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import pg from 'pg';
-import { loadConfig } from '@config/index';
+import { loadConfig } from '@config/index.js';
 
 const { Pool } = pg;
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface Migration {
   name: string;

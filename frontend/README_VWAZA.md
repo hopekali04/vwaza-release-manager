@@ -7,7 +7,7 @@ React application for the Vwaza Release Manager platform. Built with React Route
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- Backend API running on `http://localhost:3000`
+- Backend API running on `http://localhost:4000`
 
 ### Setup
 
@@ -173,7 +173,7 @@ import { Button, Input, Card, Badge, Alert } from '~/components/ui';
 ## Environment Variables
 
 ```bash
-VITE_API_URL=http://localhost:3000  # Backend API URL
+VITE_API_URL=http://localhost:4000  # Backend API URL
 ```
 
 ## Troubleshooting

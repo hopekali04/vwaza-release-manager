@@ -124,11 +124,11 @@ You asked: *"If cloud uploads fail, do we lose the file?"*
 3.  **Respond**: We tell the User "Upload Received" immediately. They don't wait for S3.
 4.  **Process (Background)**:
     *   A background worker sees the `PENDING` job.
-    *   It tries to upload to Cloud Storage (S3/Cloudinary).
+    *   It tries to upload to Cloud Storage (Supabase Storage).
     *   **Success**: It updates the **Track** with the new Cloud URL, deletes the local file, and marks Job as `COMPLETED`.
     *   **Failure**: It marks Job as `FAILED` (or increments retry). The local file stays safe. We retry later.
 
 ### Fetching Data
-*   **Database**: Stores the **Metadata** (Title, Duration) and the **Cloud URL** (e.g., `https://s3.aws.com/song.mp3`).
-*   **Cloud Storage**: Stores the actual **Bytes** (The MP3 file).
+*   **Database**: Stores the **Metadata** (Title, Duration) and the **Cloud URL** (e.g., `https://your-project.supabase.co/storage/v1/object/public/vwaza-uploads/audio/...`).
+*   **Cloud Storage**: Stores the actual **Bytes** (The MP3 file) in Supabase Storage buckets.
 *   **Frontend**: Asks DB for the URL $\rightarrow$ Uses URL to play the song.

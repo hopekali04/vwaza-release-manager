@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(response.user);
       
       // Redirect based on role
-      navigate(response.user.role === 'ADMIN' ? '/admin' : '/dashboard');
+      navigate(response.user.role === 'ADMIN' ? '/dashboard/admin' : '/dashboard');
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || 'Login failed. Please check your credentials.');

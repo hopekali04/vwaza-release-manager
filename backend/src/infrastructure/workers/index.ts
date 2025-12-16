@@ -1,7 +1,7 @@
 import { UploadWorker } from './upload-worker.js';
 import { ProcessingWorker } from './processing-worker.js';
-import { createLogger } from '@shared/logger';
-import { loadConfig } from '@config/index';
+import { createLogger } from '@shared/logger.js';
+import { loadConfig } from '@config/index.js';
 
 export class WorkerManager {
   private uploadWorker: UploadWorker;

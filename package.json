@@ -1,0 +1,5 @@
+{
+	"devDependencies": {
+		"@types/mime-types": "^3.0.1"
+	}
+}

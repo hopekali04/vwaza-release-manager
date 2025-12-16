@@ -1,7 +1,7 @@
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 import { ReleaseStatus } from '@vwaza/shared';
-import { createLogger } from '@shared/logger';
-import { loadConfig } from '@config/index';
+import { createLogger } from '@shared/logger.js';
+import { loadConfig } from '@config/index.js';
 
 interface ProcessingRelease {
   id: string;
@@ -11,10 +11,11 @@ interface ProcessingRelease {
 }
 
 const POLL_INTERVAL = 10000; // Check every 10 seconds
-const SIMULATED_PROCESSING_TIME = 7000; // Simulate 7s processing time per release
+const SIMULATED_PROCESSING_TIME = 7000; // Simulate 7s processing time per release (transcoding + metadata extraction)
 
 export class ProcessingWorker {
   private isRunning = false;
+  private isProcessing = false;
   private logger = createLogger(loadConfig());
 
   async start(): Promise<void> {
@@ -28,9 +29,11 @@ export class ProcessingWorker {
     
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(() => {
-      this.processReleases().catch((error) => {
-        this.logger.error({ error }, 'Error processing releases');
-      });
+      if (!this.isProcessing) {
+        this.processReleases().catch((error) => {
+          this.logger.error({ error }, 'Error processing releases');
+        });
+      }
     }, POLL_INTERVAL);
   }
 
@@ -40,24 +43,33 @@ export class ProcessingWorker {
   }
 
   private async processReleases(): Promise<void> {
-    const pool = getDatabasePool();
-    
-    // Find releases in PROCESSING state
-    const result = await pool.query<ProcessingRelease>(
-      `SELECT 
-         r.id, 
-         r.artist_id AS "artistId",
-         r.title,
-         COUNT(t.id) AS "trackCount"
-       FROM releases r
-       LEFT JOIN tracks t ON t.release_id = r.id
-       WHERE r.status = $1
-       GROUP BY r.id, r.artist_id, r.title`,
-      [ReleaseStatus.PROCESSING]
-    );
+    this.isProcessing = true;
+    try {
+      const pool = getDatabasePool();
+      
+      // Find releases in PROCESSING state
+      const result = await pool.query<ProcessingRelease>(
+        `SELECT 
+           r.id, 
+           r.artist_id AS "artistId",
+           r.title,
+           COUNT(t.id) AS "trackCount"
+         FROM releases r
+         LEFT JOIN tracks t ON t.release_id = r.id
+         WHERE r.status = $1
+         GROUP BY r.id, r.artist_id, r.title`,
+        [ReleaseStatus.PROCESSING]
+      );
 
-    for (const release of result.rows) {
-      await this.processRelease(release);
+      for (const row of result.rows) {
+        const release: ProcessingRelease = {
+          ...row,
+          trackCount: parseInt(String(row.trackCount), 10)
+        };
+        await this.processRelease(release);
+      }
+    } finally {
+      this.isProcessing = false;
     }
   }
 
@@ -116,7 +128,7 @@ export class ProcessingWorker {
     // Simulate processing delay (transcoding, metadata extraction, etc.)
     await new Promise((resolve) => setTimeout(resolve, SIMULATED_PROCESSING_TIME));
     
-    // In production, this would include:
+    // later on, this would include:
     // - Audio transcoding to multiple formats
     // - Metadata extraction (duration, bitrate, etc.)
     // - Audio quality validation

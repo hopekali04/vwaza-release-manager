@@ -165,9 +165,11 @@ layout("routes/_dashboard.tsx", [
 - Navigation to approval queue
 
 **Admin Approval Queue** (`_dashboard.admin.approvals.tsx`):
-- List of releases pending review
-- Approve/reject actions
-- Release details preview
+- View toggle between "Pending Approvals" and "All Releases"
+- Paginated list with configurable page size (10 items default)
+- Approve/reject actions with confirm modals
+- Release details preview with track expansion
+- Pagination controls: previous/next buttons, page numbers, total count display
 
 ### Sidebar Navigation
 
@@ -184,7 +186,7 @@ Shows active route highlighting and user info.
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- Backend API running on `http://localhost:3000`
+- Backend API running on `http://localhost:4000`
 
 ### Installation
 
@@ -196,7 +198,7 @@ pnpm install
 cp frontend/.env.example frontend/.env
 
 # Edit .env to point to your backend
-# VITE_API_URL=http://localhost:3000
+# VITE_API_URL=http://localhost:4000
 ```
 
 ### Development
@@ -226,7 +228,7 @@ pnpm build
 **File**: `.env.example`
 
 ```bash
-VITE_API_URL=http://localhost:3000  # Backend API URL
+VITE_API_URL=http://localhost:4000  # Backend API URL
 ```
 
 Create `.env` locally (not committed to git):
@@ -351,10 +353,10 @@ Password: Test@123
 - [ ] Email verification
 
 ### API Endpoints Needed
-- `GET /api/releases` - List releases
+- `GET /api/releases` - List releases (paginated with optional status filter: `?page=1&limit=10&status=PENDING_REVIEW`)
 - `POST /api/releases` - Create release
 - `PUT /api/releases/:id` - Update release
-- `GET /api/admin/pending` - Pending approvals
+- `GET /api/admin/pending` - Pending approvals (now paginated in admin panel)
 - `PUT /api/admin/releases/:id/approve` - Approve release
 - `PUT /api/admin/releases/:id/reject` - Reject release
 - `GET /api/users` - List users (admin)
@@ -364,7 +366,7 @@ Password: Test@123
 ### Common Issues
 
 **"Cannot connect to backend"**
-- Ensure backend is running on `http://localhost:3000`
+- Ensure backend is running on `http://localhost:4000`
 - Check `VITE_API_URL` in `.env`
 - Check CORS settings in backend
 
@@ -390,17 +392,6 @@ Password: Test@123
 5. **Auth State**: Use `useAuth()` hook everywhere, never access localStorage directly
 6. **Routing**: Use `<Link>` from react-router for navigation, never `<a>` tags
 
-## Contributing
-
-When adding new features:
-
-1. Create components in `components/` if reusable
-2. Add routes in `routes/` following naming convention
-3. Update `routes.ts` with new route config
-4. Use existing auth patterns from `AuthContext`
-5. Follow design system colors and spacing
-6. Add error handling and loading states
-7. Update this documentation
 
 ## Architecture Notes
 

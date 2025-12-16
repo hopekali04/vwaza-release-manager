@@ -68,7 +68,6 @@ This creates:
 - Test artist: `artist@vwaza.com` (password: `Artist@123`)
 - Demo release for testing
 
-**Note**: Update seed file `001_seed_users.sql` with real bcrypt hashes before using in production!
 
 ### Combined Setup
 
@@ -189,7 +188,7 @@ CREATE TABLE IF NOT EXISTS migrations (
 
 ```bash
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  http://localhost:3000/api/profile
+  http://localhost:4000/api/profile
 ```
 
 ### Database Connection Errors
@@ -242,7 +241,6 @@ Before production:
 - [ ] Change `JWT_SECRET` to cryptographically random string (min 32 chars)
 - [ ] Set `JWT_EXPIRES_IN` to short duration (15m - 1h)
 - [ ] Update seed file passwords with real bcrypt hashes
-- [ ] Remove seed script from production or gate behind env var
 - [ ] Set `NODE_ENV=production`
 - [ ] Use environment-specific `.env` files
 - [ ] Rotate JWT secret periodically
