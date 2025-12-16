@@ -11,6 +11,12 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/signup',
     {
+      config: {
+        rateLimit: {
+          max: 5, // 5 signup attempts
+          timeWindow: '15 minutes', // per 15 minutes
+        },
+      },
       schema: {
         description: 'Create a new user account',
         tags: ['Authentication'],
@@ -124,6 +130,12 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post(
     '/signin',
     {
+      config: {
+        rateLimit: {
+          max: 10, // 10 login attempts
+          timeWindow: '15 minutes', // per 15 minutes
+        },
+      },
       schema: {
         description: 'Authenticate user and return access token',
         tags: ['Authentication'],
