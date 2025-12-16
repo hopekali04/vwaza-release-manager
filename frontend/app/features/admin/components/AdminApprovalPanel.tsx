@@ -46,8 +46,9 @@ export function AdminApprovalPanel() {
       setReleases(response.releases);
       setTotalPages(response.pagination.totalPages);
       setTotal(response.pagination.total);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch releases');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch releases';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -85,8 +86,9 @@ export function AdminApprovalPanel() {
       await releaseService.approveRelease(id);
       setReleases(releases.filter(r => r.id !== id));
       if (expandedReleaseId === id) setExpandedReleaseId(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to approve release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to approve release';
+      setError(message);
     }
   };
 
@@ -102,8 +104,9 @@ export function AdminApprovalPanel() {
       await releaseService.rejectRelease(pendingRejectId);
       setReleases(releases.filter(r => r.id !== pendingRejectId));
       if (expandedReleaseId === pendingRejectId) setExpandedReleaseId(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to reject release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to reject release';
+      setError(message);
     } finally {
       setIsRejecting(false);
       setPendingRejectId(null);
