@@ -5,6 +5,7 @@ import { loadConfig } from '@config/index';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService';
 import { readFile } from 'fs/promises';
 import { basename } from 'path';
+import type { PoolClient } from 'pg';
 
 interface UploadJob {
   id: string;
@@ -14,11 +15,12 @@ interface UploadJob {
   status: UploadJobStatus;
   retryCount: number;
   errorLog: string | null;
+  updatedAt: Date;
 }
 
 const MAX_RETRIES = 3;
 const POLL_INTERVAL = 5000; // Check for new jobs every 5 seconds
-// const SIMULATED_UPLOAD_TIME = 3000; // Simulate 3s upload time
+const STUCK_JOB_TIMEOUT = 5 * 60 * 1000; // 5 minutes - if UPLOADING for longer, consider stuck
 
 export class UploadWorker {
   private isRunning = false;
@@ -36,6 +38,10 @@ export class UploadWorker {
     
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(() => {
+      this.recoverStuckJobs().catch((error) => {
+        this.logger.error({ error }, 'Error recovering stuck jobs');
+      });
+      
       this.processPendingJobs().catch((error) => {
         this.logger.error({ error }, 'Error processing upload jobs');
       });
@@ -45,6 +51,47 @@ export class UploadWorker {
   stop(): void {
     this.isRunning = false;
     this.logger.info('Upload worker stopped');
+  }
+
+  /**
+   * Recover stuck jobs that have been in UPLOADING state for too long
+   */
+  private async recoverStuckJobs(): Promise<void> {
+    const pool = getDatabasePool();
+    
+    // Find jobs stuck in UPLOADING for more than STUCK_JOB_TIMEOUT
+    const stuckCutoff = new Date(Date.now() - STUCK_JOB_TIMEOUT);
+    
+    const result = await pool.query<UploadJob>(
+      `SELECT * FROM upload_jobs 
+       WHERE status = $1 
+       AND updated_at < $2`,
+      [UploadJobStatus.UPLOADING, stuckCutoff]
+    );
+
+    if (result.rows.length > 0) {
+      this.logger.warn(
+        { count: result.rows.length },
+        'Found stuck upload jobs, resetting to PENDING'
+      );
+
+      for (const job of result.rows) {
+        await pool.query(
+          `UPDATE upload_jobs 
+           SET status = $1, 
+               error_log = $2,
+               updated_at = NOW()
+           WHERE id = $3`,
+          [
+            UploadJobStatus.PENDING,
+            'Job was stuck in UPLOADING state and has been reset',
+            job.id
+          ]
+        );
+        
+        this.logger.info({ jobId: job.id }, 'Reset stuck job to PENDING');
+      }
+    }
   }
 
   private async processPendingJobs(): Promise<void> {
@@ -65,31 +112,42 @@ export class UploadWorker {
 
   private async processJob(job: UploadJob): Promise<void> {
     const pool = getDatabasePool();
+    const client = await pool.connect();
     
     try {
       this.logger.info({ jobId: job.id, jobType: job.jobType }, 'Processing upload job');
       
+      // Begin transaction
+      await client.query('BEGIN');
+
       // Update status to UPLOADING
-      await pool.query(
-        'UPDATE upload_jobs SET status = $1 WHERE id = $2',
+      await client.query(
+        'UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2',
         [UploadJobStatus.UPLOADING, job.id]
       );
 
       // Upload to Supabase
       const { url, duration } = await this.performUpload(job);
 
+      // Update the target entity with the file URL (within transaction)
+      await this.updateEntityWithUrl(client, job, url, duration);
+
       // Mark as completed
-      await pool.query(
-        'UPDATE upload_jobs SET status = $1 WHERE id = $2',
+      await client.query(
+        'UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2',
         [UploadJobStatus.COMPLETED, job.id]
       );
 
-      // Update the target entity with the file URL
-      await this.updateEntityWithUrl(job, url, duration);
+      // Commit transaction
+      await client.query('COMMIT');
 
       this.logger.info({ jobId: job.id }, 'Upload job completed successfully');
     } catch (error) {
+      // Rollback transaction
+      await client.query('ROLLBACK');
       await this.handleJobFailure(job, error);
+    } finally {
+      client.release();
     }
   }
 
@@ -99,26 +157,24 @@ export class UploadWorker {
     return this.cloudStorageService.uploadFile(buffer, filename, job.jobType);
   }
 
-  private async updateEntityWithUrl(job: UploadJob, url: string, duration?: number): Promise<void> {
-    const pool = getDatabasePool();
-
+  private async updateEntityWithUrl(client: PoolClient, job: UploadJob, url: string, duration?: number): Promise<void> {
     if (job.jobType === UploadJobType.AUDIO) {
       // Update track's audio_file_url and duration if available
       if (duration) {
-         await pool.query(
-          'UPDATE tracks SET audio_file_url = $1, duration_seconds = $2 WHERE id = $3',
+         await client.query(
+          'UPDATE tracks SET audio_file_url = $1, duration_seconds = $2, updated_at = NOW() WHERE id = $3',
           [url, duration, job.targetEntityId]
         );
       } else {
-        await pool.query(
-          'UPDATE tracks SET audio_file_url = $1 WHERE id = $2',
+        await client.query(
+          'UPDATE tracks SET audio_file_url = $1, updated_at = NOW() WHERE id = $2',
           [url, job.targetEntityId]
         );
       }
     } else if (job.jobType === UploadJobType.COVER_ART) {
       // Update release's cover_art_url
-      await pool.query(
-        'UPDATE releases SET cover_art_url = $1 WHERE id = $2',
+      await client.query(
+        'UPDATE releases SET cover_art_url = $1, updated_at = NOW() WHERE id = $2',
         [url, job.targetEntityId]
       );
     }
@@ -136,14 +192,14 @@ export class UploadWorker {
     if (job.retryCount >= MAX_RETRIES) {
       // Mark as permanently failed
       await pool.query(
-        'UPDATE upload_jobs SET status = $1, error_log = $2 WHERE id = $3',
+        'UPDATE upload_jobs SET status = $1, error_log = $2, updated_at = NOW() WHERE id = $3',
         [UploadJobStatus.FAILED, errorMessage, job.id]
       );
       this.logger.error({ jobId: job.id }, 'Upload job permanently failed after max retries');
     } else {
       // Retry: reset to PENDING and increment retry count
       await pool.query(
-        'UPDATE upload_jobs SET status = $1, retry_count = $2, error_log = $3 WHERE id = $4',
+        'UPDATE upload_jobs SET status = $1, retry_count = $2, error_log = $3, updated_at = NOW() WHERE id = $4',
         [UploadJobStatus.PENDING, job.retryCount + 1, errorMessage, job.id]
       );
       this.logger.info({ jobId: job.id, retryCount: job.retryCount + 1 }, 'Job queued for retry');
