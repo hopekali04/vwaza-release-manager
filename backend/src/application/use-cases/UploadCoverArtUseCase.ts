@@ -39,19 +39,11 @@ export class UploadCoverArtUseCase {
       await client.query('BEGIN');
 
       // Upload to cloud storage first
-      const { url } = await this.cloudStorage.uploadFile(
-        file,
-        filename,
-        UploadJobType.COVER_ART
-      );
+      const { url } = await this.cloudStorage.uploadFile(file, filename, UploadJobType.COVER_ART);
       uploadedUrl = url;
 
       // Update release with cover art URL using repository
-      await this.releaseRepository.update(
-        releaseId,
-        { coverArtUrl: url },
-        client
-      );
+      await this.releaseRepository.update(releaseId, { coverArtUrl: url }, client);
 
       // Commit transaction
       await client.query('COMMIT');

@@ -8,7 +8,11 @@ import swaggerUi from '@fastify/swagger-ui';
 import multipart from '@fastify/multipart';
 import { loadConfig } from '@config/index.js';
 import { createLogger } from '@shared/logger.js';
-import { createDatabasePool, testDatabaseConnection, closeDatabasePool } from '@infrastructure/database/index.js';
+import {
+  createDatabasePool,
+  testDatabaseConnection,
+  closeDatabasePool,
+} from '@infrastructure/database/index.js';
 import { WorkerManager } from '@infrastructure/workers/index.js';
 import { authRoutes } from './routes/authRoutes.js';
 import { releaseRoutes } from './routes/releaseRoutes.js';
@@ -21,11 +25,11 @@ async function buildServer() {
   // Initialize database pool
   createDatabasePool();
   const dbConnected = await testDatabaseConnection();
-  
+
   if (!dbConnected) {
     throw new Error('Failed to connect to database');
   }
-  
+
   logger.info('Database connection established');
 
   // Initialize background workers
@@ -138,30 +142,34 @@ async function buildServer() {
     }
   });
 
-  server.get('/health', {
-    schema: {
-      description: 'Health check endpoint',
-      tags: ['Health'],
-      response: {
-        200: {
-          description: 'Server is healthy',
-          type: 'object',
-          properties: {
-            status: { type: 'string', example: 'ok' },
-            timestamp: { type: 'string', format: 'date-time' },
-            database: { type: 'string', enum: ['connected', 'disconnected'] },
+  server.get(
+    '/health',
+    {
+      schema: {
+        description: 'Health check endpoint',
+        tags: ['Health'],
+        response: {
+          200: {
+            description: 'Server is healthy',
+            type: 'object',
+            properties: {
+              status: { type: 'string', example: 'ok' },
+              timestamp: { type: 'string', format: 'date-time' },
+              database: { type: 'string', enum: ['connected', 'disconnected'] },
+            },
           },
         },
       },
     },
-  }, async () => {
-    const dbHealthy = await testDatabaseConnection();
-    return { 
-      status: 'ok', 
-      timestamp: new Date().toISOString(),
-      database: dbHealthy ? 'connected' : 'disconnected',
-    };
-  });
+    async () => {
+      const dbHealthy = await testDatabaseConnection();
+      return {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        database: dbHealthy ? 'connected' : 'disconnected',
+      };
+    }
+  );
 
   server.addHook('onClose', async () => {
     logger.info('Server shutting down, cleaning up resources...');

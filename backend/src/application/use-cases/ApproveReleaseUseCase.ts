@@ -8,7 +8,7 @@ export class ApproveReleaseUseCase {
 
   async execute(releaseId: string): Promise<ReleaseResponseDto> {
     const release = await this.releaseRepository.findById(releaseId);
-    
+
     if (!release) {
       throw new ResourceNotFoundError('Release', releaseId);
     }

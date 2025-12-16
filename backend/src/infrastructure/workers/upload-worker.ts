@@ -35,13 +35,13 @@ export class UploadWorker {
 
     this.isRunning = true;
     this.logger.info('Upload worker started');
-    
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(() => {
       this.recoverStuckJobs().catch((error) => {
         this.logger.error({ error }, 'Error recovering stuck jobs');
       });
-      
+
       this.processPendingJobs().catch((error) => {
         this.logger.error({ error }, 'Error processing upload jobs');
       });
@@ -58,10 +58,10 @@ export class UploadWorker {
    */
   private async recoverStuckJobs(): Promise<void> {
     const pool = getDatabasePool();
-    
+
     // Find jobs stuck in UPLOADING for more than STUCK_JOB_TIMEOUT
     const stuckCutoff = new Date(Date.now() - STUCK_JOB_TIMEOUT);
-    
+
     const result = await pool.query<UploadJob>(
       `SELECT * FROM upload_jobs 
        WHERE status = $1 
@@ -82,13 +82,9 @@ export class UploadWorker {
                error_log = $2,
                updated_at = NOW()
            WHERE id = $3`,
-          [
-            UploadJobStatus.PENDING,
-            'Job was stuck in UPLOADING state and has been reset',
-            job.id
-          ]
+          [UploadJobStatus.PENDING, 'Job was stuck in UPLOADING state and has been reset', job.id]
         );
-        
+
         this.logger.info({ jobId: job.id }, 'Reset stuck job to PENDING');
       }
     }
@@ -96,7 +92,7 @@ export class UploadWorker {
 
   private async processPendingJobs(): Promise<void> {
     const pool = getDatabasePool();
-    
+
     const result = await pool.query<UploadJob>(
       `SELECT * FROM upload_jobs 
        WHERE status = $1 
@@ -113,18 +109,18 @@ export class UploadWorker {
   private async processJob(job: UploadJob): Promise<void> {
     const pool = getDatabasePool();
     const client = await pool.connect();
-    
+
     try {
       this.logger.info({ jobId: job.id, jobType: job.jobType }, 'Processing upload job');
-      
+
       // Begin transaction
       await client.query('BEGIN');
 
       // Update status to UPLOADING
-      await client.query(
-        'UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2',
-        [UploadJobStatus.UPLOADING, job.id]
-      );
+      await client.query('UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2', [
+        UploadJobStatus.UPLOADING,
+        job.id,
+      ]);
 
       // Upload to Supabase
       const { url, duration } = await this.performUpload(job);
@@ -133,10 +129,10 @@ export class UploadWorker {
       await this.updateEntityWithUrl(client, job, url, duration);
 
       // Mark as completed
-      await client.query(
-        'UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2',
-        [UploadJobStatus.COMPLETED, job.id]
-      );
+      await client.query('UPDATE upload_jobs SET status = $1, updated_at = NOW() WHERE id = $2', [
+        UploadJobStatus.COMPLETED,
+        job.id,
+      ]);
 
       // Commit transaction
       await client.query('COMMIT');
@@ -157,11 +153,16 @@ export class UploadWorker {
     return this.cloudStorageService.uploadFile(buffer, filename, job.jobType);
   }
 
-  private async updateEntityWithUrl(client: PoolClient, job: UploadJob, url: string, duration?: number): Promise<void> {
+  private async updateEntityWithUrl(
+    client: PoolClient,
+    job: UploadJob,
+    url: string,
+    duration?: number
+  ): Promise<void> {
     if (job.jobType === UploadJobType.AUDIO) {
       // Update track's audio_file_url and duration if available
       if (duration) {
-         await client.query(
+        await client.query(
           'UPDATE tracks SET audio_file_url = $1, duration_seconds = $2, updated_at = NOW() WHERE id = $3',
           [url, duration, job.targetEntityId]
         );
@@ -183,7 +184,7 @@ export class UploadWorker {
   private async handleJobFailure(job: UploadJob, error: unknown): Promise<void> {
     const pool = getDatabasePool();
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     this.logger.error(
       { jobId: job.id, retryCount: job.retryCount, error: errorMessage },
       'Upload job failed'

@@ -29,7 +29,7 @@ export function createLogger(config: Config) {
   }
 
   const multistreamLogger = multistream(streams);
-  
+
   return pino(
     {
       level: config.logLevel,

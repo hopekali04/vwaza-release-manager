@@ -29,10 +29,7 @@ export class TrackRepository implements ITrackRepository {
   }
 
   async findById(id: string): Promise<Track | null> {
-    const result = await this.pool.query(
-      'SELECT * FROM tracks WHERE id = $1',
-      [id]
-    );
+    const result = await this.pool.query('SELECT * FROM tracks WHERE id = $1', [id]);
     return result.rows[0] ? this.mapToEntity(result.rows[0]) : null;
   }
 
@@ -44,7 +41,11 @@ export class TrackRepository implements ITrackRepository {
     return result.rows.map(this.mapToEntity);
   }
 
-  async update(id: string, data: UpdateTrackData, client?: import('pg').PoolClient): Promise<Track | null> {
+  async update(
+    id: string,
+    data: UpdateTrackData,
+    client?: import('pg').PoolClient
+  ): Promise<Track | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
@@ -85,10 +86,7 @@ export class TrackRepository implements ITrackRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.pool.query(
-      'DELETE FROM tracks WHERE id = $1',
-      [id]
-    );
+    const result = await this.pool.query('DELETE FROM tracks WHERE id = $1', [id]);
     return (result.rowCount ?? 0) > 0;
   }
 

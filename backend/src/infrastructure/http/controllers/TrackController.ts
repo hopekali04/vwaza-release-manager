@@ -8,23 +8,16 @@ import { ListTracksUseCase } from '@application/use-cases/ListTracksUseCase.js';
 import { UpdateTrackUseCase } from '@application/use-cases/UpdateTrackUseCase.js';
 import { DeleteTrackUseCase } from '@application/use-cases/DeleteTrackUseCase.js';
 import { UploadAudioFileUseCase } from '@application/use-cases/UploadAudioFileUseCase.js';
-import {
-  createTrackRequestSchema,
-  updateTrackRequestSchema,
-  UserRole,
-} from '@vwaza/shared';
+import { createTrackRequestSchema, updateTrackRequestSchema, UserRole } from '@vwaza/shared';
 
 export class TrackController {
   private trackRepository = new TrackRepository();
   private releaseRepository = new ReleaseRepository();
   private cloudStorage = new CloudStorageService();
 
-  async createTrack(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async createTrack(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const result = createTrackRequestSchema.safeParse(request.body);
-    
+
     if (!result.success) {
       reply.status(400).send({
         error: 'Validation failed',
@@ -55,10 +48,7 @@ export class TrackController {
     }
   }
 
-  async listTracks(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async listTracks(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     // Verify release access
     const { releaseId } = request.params as { releaseId: string };
     const release = await this.releaseRepository.findById(releaseId);
@@ -77,12 +67,9 @@ export class TrackController {
     reply.send(tracks);
   }
 
-  async updateTrack(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async updateTrack(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const result = updateTrackRequestSchema.safeParse(request.body);
-    
+
     if (!result.success) {
       reply.status(400).send({
         error: 'Validation failed',
@@ -121,10 +108,7 @@ export class TrackController {
     reply.send(updatedTrack);
   }
 
-  async deleteTrack(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async deleteTrack(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     // Verify track exists and check ownership via release
     const { id } = request.params as { id: string };
     const track = await this.trackRepository.findById(id);
@@ -155,12 +139,9 @@ export class TrackController {
     reply.status(204).send();
   }
 
-  async uploadAudioFile(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async uploadAudioFile(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const data = await request.file();
-    
+
     if (!data) {
       reply.status(400).send({ error: 'No file uploaded' });
       return;
@@ -189,7 +170,7 @@ export class TrackController {
       const buffer = await data.toBuffer();
       const useCase = new UploadAudioFileUseCase(this.trackRepository, this.cloudStorage);
       const result = await useCase.execute(id, buffer, data.filename);
-      
+
       reply.send(result);
     } catch (error) {
       reply.status(400).send({ error: (error as Error).message });

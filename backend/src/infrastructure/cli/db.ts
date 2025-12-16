@@ -36,10 +36,8 @@ async function getAppliedMigrations(pool: pg.Pool): Promise<string[]> {
 async function loadMigrationFiles(): Promise<Migration[]> {
   const migrationsDir = path.join(__dirname, '../../../migrations');
   const files = await fs.readdir(migrationsDir);
-  
-  const migrationFiles = files
-    .filter((file) => file.endsWith('.sql'))
-    .sort();
+
+  const migrationFiles = files.filter((file) => file.endsWith('.sql')).sort();
 
   const migrations: Migration[] = [];
   for (const file of migrationFiles) {
@@ -51,22 +49,16 @@ async function loadMigrationFiles(): Promise<Migration[]> {
   return migrations;
 }
 
-async function applyMigration(
-  pool: pg.Pool,
-  migration: Migration
-): Promise<void> {
+async function applyMigration(pool: pg.Pool, migration: Migration): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    
+
     console.log(`Applying migration: ${migration.name}`);
     await client.query(migration.sql);
-    
-    await client.query(
-      'INSERT INTO migrations (name) VALUES ($1)',
-      [migration.name]
-    );
-    
+
+    await client.query('INSERT INTO migrations (name) VALUES ($1)', [migration.name]);
+
     await client.query('COMMIT');
     console.log(`✓ Migration applied: ${migration.name}`);
   } catch (error) {
@@ -89,7 +81,7 @@ async function runMigrations(): Promise<void> {
 
   try {
     console.log('Starting database migrations...\n');
-    
+
     await createMigrationsTable(pool);
     const appliedMigrations = await getAppliedMigrations(pool);
     const allMigrations = await loadMigrationFiles();
@@ -104,7 +96,7 @@ async function runMigrations(): Promise<void> {
     }
 
     console.log(`Found ${pendingMigrations.length} pending migration(s):\n`);
-    
+
     for (const migration of pendingMigrations) {
       await applyMigration(pool, migration);
     }
@@ -130,7 +122,7 @@ async function runSeeds(): Promise<void> {
 
   try {
     console.log('Starting database seeding...\n');
-    
+
     const seedsDir = path.join(__dirname, '../../../migrations/seeds');
     const files = await fs.readdir(seedsDir);
     const seedFiles = files.filter((file) => file.endsWith('.sql')).sort();

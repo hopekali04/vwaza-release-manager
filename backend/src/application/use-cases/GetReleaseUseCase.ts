@@ -7,7 +7,7 @@ export class GetReleaseUseCase {
 
   async execute(releaseId: string): Promise<ReleaseResponseDto | null> {
     const release = await this.releaseRepository.findById(releaseId);
-    
+
     if (!release) {
       return null;
     }

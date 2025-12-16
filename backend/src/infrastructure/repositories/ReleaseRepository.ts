@@ -22,10 +22,7 @@ export class ReleaseRepository implements IReleaseRepository {
   }
 
   async findById(id: string): Promise<Release | null> {
-    const result = await this.pool.query(
-      'SELECT * FROM releases WHERE id = $1',
-      [id]
-    );
+    const result = await this.pool.query('SELECT * FROM releases WHERE id = $1', [id]);
     return result.rows[0] ? this.mapToEntity(result.rows[0]) : null;
   }
 
@@ -46,13 +43,15 @@ export class ReleaseRepository implements IReleaseRepository {
   }
 
   async findAll(): Promise<Release[]> {
-    const result = await this.pool.query(
-      'SELECT * FROM releases ORDER BY created_at DESC'
-    );
+    const result = await this.pool.query('SELECT * FROM releases ORDER BY created_at DESC');
     return result.rows.map(this.mapToEntity);
   }
 
-  async update(id: string, data: UpdateReleaseData, client?: import('pg').PoolClient): Promise<Release | null> {
+  async update(
+    id: string,
+    data: UpdateReleaseData,
+    client?: import('pg').PoolClient
+  ): Promise<Release | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
@@ -89,10 +88,7 @@ export class ReleaseRepository implements IReleaseRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.pool.query(
-      'DELETE FROM releases WHERE id = $1',
-      [id]
-    );
+    const result = await this.pool.query('DELETE FROM releases WHERE id = $1', [id]);
     return (result.rowCount ?? 0) > 0;
   }
 
@@ -104,7 +100,9 @@ export class ReleaseRepository implements IReleaseRepository {
     return result.rows[0] ? this.mapToEntity(result.rows[0]) : null;
   }
 
-  async getReleasesWithTrackCount(artistId?: string): Promise<Array<Release & { trackCount: number }>> {
+  async getReleasesWithTrackCount(
+    artistId?: string
+  ): Promise<Array<Release & { trackCount: number }>> {
     const query = artistId
       ? `SELECT r.*, COUNT(t.id)::int as track_count
          FROM releases r
@@ -135,7 +133,7 @@ export class ReleaseRepository implements IReleaseRepository {
     status?: ReleaseStatus
   ): Promise<{ releases: Array<Release & { trackCount: number }>; total: number }> {
     const offset = (page - 1) * limit;
-    
+
     let whereConditions: string[] = [];
     let params: any[] = [];
     let paramIndex = 1;

@@ -26,7 +26,7 @@ export class ProcessingWorker {
 
     this.isRunning = true;
     this.logger.info('Processing worker started');
-    
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setInterval(() => {
       if (!this.isProcessing) {
@@ -46,7 +46,7 @@ export class ProcessingWorker {
     this.isProcessing = true;
     try {
       const pool = getDatabasePool();
-      
+
       // Find releases in PROCESSING state
       const result = await pool.query<ProcessingRelease>(
         `SELECT 
@@ -64,7 +64,7 @@ export class ProcessingWorker {
       for (const row of result.rows) {
         const release: ProcessingRelease = {
           ...row,
-          trackCount: parseInt(String(row.trackCount), 10)
+          trackCount: parseInt(String(row.trackCount), 10),
         };
         await this.processRelease(release);
       }
@@ -75,13 +75,10 @@ export class ProcessingWorker {
 
   private async processRelease(release: ProcessingRelease): Promise<void> {
     const pool = getDatabasePool();
-    
+
     try {
-      this.logger.info(
-        { releaseId: release.id, title: release.title },
-        'Processing release'
-      );
-      
+      this.logger.info({ releaseId: release.id, title: release.title }, 'Processing release');
+
       // Simulate transcoding/processing
       await this.simulateProcessing();
 
@@ -92,42 +89,39 @@ export class ProcessingWorker {
          WHERE release_id = $1 AND audio_file_url IS NOT NULL AND audio_file_url != ''`,
         [release.id]
       );
-      
+
       const uploadedTracksCount = parseInt(tracksResult.rows[0].count, 10);
 
       if (uploadedTracksCount === release.trackCount && release.trackCount > 0) {
         // All tracks processed, move to PENDING_REVIEW
-        await pool.query(
-          'UPDATE releases SET status = $1 WHERE id = $2',
-          [ReleaseStatus.PENDING_REVIEW, release.id]
-        );
-        
+        await pool.query('UPDATE releases SET status = $1 WHERE id = $2', [
+          ReleaseStatus.PENDING_REVIEW,
+          release.id,
+        ]);
+
         this.logger.info(
           { releaseId: release.id, title: release.title },
           'Release processing completed, moved to PENDING_REVIEW'
         );
       } else {
         this.logger.info(
-          { 
-            releaseId: release.id, 
+          {
+            releaseId: release.id,
             uploadedTracks: uploadedTracksCount,
-            totalTracks: release.trackCount 
+            totalTracks: release.trackCount,
           },
           'Release still processing, waiting for all tracks'
         );
       }
     } catch (error) {
-      this.logger.error(
-        { releaseId: release.id, error },
-        'Failed to process release'
-      );
+      this.logger.error({ releaseId: release.id, error }, 'Failed to process release');
     }
   }
 
   private async simulateProcessing(): Promise<void> {
     // Simulate processing delay (transcoding, metadata extraction, etc.)
     await new Promise((resolve) => setTimeout(resolve, SIMULATED_PROCESSING_TIME));
-    
+
     // later on, this would include:
     // - Audio transcoding to multiple formats
     // - Metadata extraction (duration, bitrate, etc.)

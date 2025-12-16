@@ -36,7 +36,7 @@ export class ReleaseController {
 
   async createRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const result = createReleaseRequestSchema.safeParse(request.body);
-    
+
     if (!result.success) {
       reply.status(400).send({
         error: 'Validation failed',
@@ -86,12 +86,9 @@ export class ReleaseController {
     reply.send(result);
   }
 
-  async updateRelease(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async updateRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const result = updateReleaseRequestSchema.safeParse(request.body);
-    
+
     if (!result.success) {
       reply.status(400).send({
         error: 'Validation failed',
@@ -116,10 +113,7 @@ export class ReleaseController {
     reply.send(updatedRelease);
   }
 
-  async deleteRelease(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async deleteRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     // Verify ownership
     const { id } = request.params as { id: string };
     const release = await this.verifyReleaseAccess(request, reply, id);
@@ -136,10 +130,7 @@ export class ReleaseController {
     reply.status(204).send();
   }
 
-  async submitRelease(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async submitRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     // Verify ownership
     const { id } = request.params as { id: string };
     const release = await this.releaseRepository.findById(id);
@@ -162,10 +153,7 @@ export class ReleaseController {
     }
   }
 
-  async approveRelease(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async approveRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     try {
       const useCase = new ApproveReleaseUseCase(this.releaseRepository);
       const { id } = request.params as { id: string };
@@ -176,10 +164,7 @@ export class ReleaseController {
     }
   }
 
-  async rejectRelease(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async rejectRelease(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     try {
       const useCase = new RejectReleaseUseCase(this.releaseRepository);
       const { id } = request.params as { id: string };
@@ -204,12 +189,9 @@ export class ReleaseController {
     reply.status(400).send({ error: error.message });
   }
 
-  async uploadCoverArt(
-    request: AuthenticatedRequest,
-    reply: FastifyReply
-  ): Promise<void> {
+  async uploadCoverArt(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
     const data = await request.file();
-    
+
     if (!data) {
       reply.status(400).send({ error: 'No file uploaded' });
       return;
@@ -224,18 +206,19 @@ export class ReleaseController {
       const buffer = await data.toBuffer();
       const useCase = new UploadCoverArtUseCase(this.releaseRepository, this.cloudStorage);
       const url = await useCase.execute(id, buffer, data.filename);
-      
+
       reply.send({ url });
     } catch (error) {
       reply.status(400).send({ error: (error as Error).message });
     }
   }
 
-    async subscribeToUpdates(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  async subscribeToUpdates(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     // Extract and verify token from query parameter
-    const token = typeof request.query === 'object' && request.query !== null 
-      ? (request.query as Record<string, unknown>).token as string | undefined
-      : undefined;
+    const token =
+      typeof request.query === 'object' && request.query !== null
+        ? ((request.query as Record<string, unknown>).token as string | undefined)
+        : undefined;
 
     if (!token) {
       reply.status(401).send({ error: { message: 'Missing authentication token' } });

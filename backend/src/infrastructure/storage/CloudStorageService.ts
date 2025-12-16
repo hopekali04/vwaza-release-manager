@@ -44,21 +44,19 @@ export class CloudStorageService {
     const lookedUp = mimeLookup(filename);
     const contentType = typeof lookedUp === 'string' ? lookedUp : 'application/octet-stream';
 
-    const { error } = await this.supabase.storage
-      .from(this.bucket)
-      .upload(path, buffer, {
-        contentType,
-        upsert: false
-      });
+    const { error } = await this.supabase.storage.from(this.bucket).upload(path, buffer, {
+      contentType,
+      upsert: false,
+    });
 
     if (error) {
       this.logger.error({ error, filename }, 'Failed to upload file to Supabase Storage');
       throw new Error(`Upload failed: ${error.message}`);
     }
 
-    const { data: { publicUrl } } = this.supabase.storage
-      .from(this.bucket)
-      .getPublicUrl(path);
+    const {
+      data: { publicUrl },
+    } = this.supabase.storage.from(this.bucket).getPublicUrl(path);
 
     let duration: number | undefined;
 
@@ -69,11 +67,8 @@ export class CloudStorageService {
         if (metadata.format.duration) {
           duration = Math.floor(metadata.format.duration);
         }
-        
-        this.logger.info(
-          { filename, duration, publicUrl },
-          'Uploaded audio file to Supabase'
-        );
+
+        this.logger.info({ filename, duration, publicUrl }, 'Uploaded audio file to Supabase');
       } catch (error) {
         this.logger.error(
           { error, filename },
@@ -81,10 +76,7 @@ export class CloudStorageService {
         );
       }
     } else {
-      this.logger.info(
-        { filename, publicUrl },
-        'Uploaded image file to Supabase'
-      );
+      this.logger.info({ filename, publicUrl }, 'Uploaded image file to Supabase');
     }
 
     return { url: publicUrl, duration };
@@ -95,7 +87,7 @@ export class CloudStorageService {
    */
   validateFileType(filename: string, type: UploadJobType): boolean {
     const extension = filename.split('.').pop()?.toLowerCase();
-    
+
     if (type === UploadJobType.AUDIO) {
       return ['mp3', 'wav', 'flac', 'm4a', 'aac'].includes(extension || '');
     } else {
@@ -108,11 +100,9 @@ export class CloudStorageService {
    */
   validateFileSize(size: number, type: UploadJobType): boolean {
     const maxSizeAudio = 100 * 1024 * 1024; // 100MB
-    const maxSizeCover = 10 * 1024 * 1024;  // 10MB
-    
-    return type === UploadJobType.AUDIO 
-      ? size <= maxSizeAudio 
-      : size <= maxSizeCover;
+    const maxSizeCover = 10 * 1024 * 1024; // 10MB
+
+    return type === UploadJobType.AUDIO ? size <= maxSizeAudio : size <= maxSizeCover;
   }
 
   /**
@@ -127,12 +117,10 @@ export class CloudStorageService {
       if (urlParts.length < 2) {
         throw new Error('Invalid URL format');
       }
-      
+
       const path = urlParts[1];
 
-      const { error } = await this.supabase.storage
-        .from(this.bucket)
-        .remove([path]);
+      const { error } = await this.supabase.storage.from(this.bucket).remove([path]);
 
       if (error) {
         this.logger.error({ error, url }, 'Failed to delete file from Supabase Storage');

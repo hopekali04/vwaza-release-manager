@@ -12,7 +12,7 @@ export async function authenticate(
 ): Promise<void> {
   try {
     const token = extractTokenFromHeader(request.headers.authorization);
-    
+
     if (!token) {
       reply.status(401).send({
         error: {
@@ -26,12 +26,15 @@ export async function authenticate(
 
     const payload = verifyAccessToken(token);
     request.user = payload;
-    
-    request.log.info({
-      userId: payload.userId,
-      email: payload.email,
-      role: payload.role,
-    }, 'User authenticated');
+
+    request.log.info(
+      {
+        userId: payload.userId,
+        email: payload.email,
+        role: payload.role,
+      },
+      'User authenticated'
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Authentication failed';
     reply.status(401).send({

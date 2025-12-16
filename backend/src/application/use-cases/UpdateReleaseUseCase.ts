@@ -5,7 +5,10 @@ import { ReleaseMapper } from '@application/mappers/ReleaseMapper.js';
 export class UpdateReleaseUseCase {
   constructor(private releaseRepository: IReleaseRepository) {}
 
-  async execute(releaseId: string, request: UpdateReleaseRequestDto): Promise<ReleaseResponseDto | null> {
+  async execute(
+    releaseId: string,
+    request: UpdateReleaseRequestDto
+  ): Promise<ReleaseResponseDto | null> {
     const release = await this.releaseRepository.update(releaseId, {
       title: request.title,
       genre: request.genre,

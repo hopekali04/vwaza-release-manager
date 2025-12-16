@@ -12,7 +12,7 @@ export class CreateTrackUseCase {
   async execute(releaseId: string, request: CreateTrackRequestDto): Promise<TrackResponseDto> {
     // Verify release exists and is in DRAFT status
     const release = await this.releaseRepository.findById(releaseId);
-    
+
     if (!release) {
       throw new Error('Release not found');
     }

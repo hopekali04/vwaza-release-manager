@@ -9,7 +9,11 @@ export class UploadAudioFileUseCase {
     private cloudStorage: CloudStorageService
   ) {}
 
-  async execute(trackId: string, file: Buffer, filename: string): Promise<{ url: string; duration: number }> {
+  async execute(
+    trackId: string,
+    file: Buffer,
+    filename: string
+  ): Promise<{ url: string; duration: number }> {
     // Validate file type
     if (!this.cloudStorage.validateFileType(filename, UploadJobType.AUDIO)) {
       throw new Error('Invalid audio file type. Supported: mp3, wav, flac, m4a, aac');

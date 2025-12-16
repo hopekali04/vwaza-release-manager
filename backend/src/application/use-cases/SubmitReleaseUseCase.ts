@@ -11,9 +11,9 @@ export class SubmitReleaseUseCase {
 
   async execute(releaseId: string): Promise<ReleaseResponseDto> {
     const release = await this.releaseRepository.findById(releaseId);
-    
+
     if (!release) {
-      throw new ResourceNotFoundError('Release', releaseId)
+      throw new ResourceNotFoundError('Release', releaseId);
     }
 
     if (release.status !== ReleaseStatus.DRAFT) {
@@ -33,8 +33,8 @@ export class SubmitReleaseUseCase {
 
     // Check if all tracks have audio files
     const tracks = await this.trackRepository.findByReleaseId(releaseId);
-    const tracksWithoutAudio = tracks.filter(t => !t.audioFileUrl || t.audioFileUrl === '');
-    
+    const tracksWithoutAudio = tracks.filter((t) => !t.audioFileUrl || t.audioFileUrl === '');
+
     if (tracksWithoutAudio.length > 0) {
       throw new InvalidStateError('All tracks must have audio files before submission');
     }
