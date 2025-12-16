@@ -114,4 +114,35 @@ export class CloudStorageService {
       ? size <= maxSizeAudio 
       : size <= maxSizeCover;
   }
+
+  /**
+   * Delete file from Supabase Storage
+   * Used for cleanup when upload transaction fails
+   */
+  async deleteFile(url: string): Promise<void> {
+    try {
+      // Extract path from public URL
+      // URL format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
+      const urlParts = url.split(`/storage/v1/object/public/${this.bucket}/`);
+      if (urlParts.length < 2) {
+        throw new Error('Invalid URL format');
+      }
+      
+      const path = urlParts[1];
+
+      const { error } = await this.supabase.storage
+        .from(this.bucket)
+        .remove([path]);
+
+      if (error) {
+        this.logger.error({ error, url }, 'Failed to delete file from Supabase Storage');
+        throw new Error(`Delete failed: ${error.message}`);
+      }
+
+      this.logger.info({ url, path }, 'Deleted file from Supabase Storage');
+    } catch (error) {
+      this.logger.error({ error, url }, 'Error deleting file');
+      throw error;
+    }
+  }
 }
