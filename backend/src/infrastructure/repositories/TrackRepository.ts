@@ -44,7 +44,7 @@ export class TrackRepository implements ITrackRepository {
     return result.rows.map(this.mapToEntity);
   }
 
-  async update(id: string, data: UpdateTrackData): Promise<Track | null> {
+  async update(id: string, data: UpdateTrackData, client?: import('pg').PoolClient): Promise<Track | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
@@ -75,7 +75,8 @@ export class TrackRepository implements ITrackRepository {
     }
 
     values.push(id);
-    const result = await this.pool.query(
+    const queryRunner = client || this.pool;
+    const result = await queryRunner.query(
       `UPDATE tracks SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
       values
     );
