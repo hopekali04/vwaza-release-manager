@@ -60,8 +60,9 @@ export function FileUpload({ label, accept, maxSize, onUpload, currentUrl, type 
         setError('Upload failed. Please try again.');
         setPreview(null);
       }
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Upload failed';
+      setError(message);
       setPreview(null);
     } finally {
       setIsUploading(false);
