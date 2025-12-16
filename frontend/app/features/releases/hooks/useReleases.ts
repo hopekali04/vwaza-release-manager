@@ -18,8 +18,9 @@ export function useReleases() {
     try {
       const response = await releaseService.getReleases();
       setReleases(response.releases);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch releases');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch releases';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -83,8 +84,9 @@ export function useReleases() {
       const newRelease = await releaseService.createRelease(data);
       setReleases((prev) => [newRelease, ...prev]);
       return newRelease;
-    } catch (err: any) {
-      setError(err.message || 'Failed to create release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create release';
+      setError(message);
       return null;
     } finally {
       setIsLoading(false);
@@ -99,7 +101,8 @@ export function useReleases() {
       setReleases((prev) => prev.map((r) => (r.id === id ? updated : r)));
       return true;
     } catch (err: any) {
-      setError(err.message || 'Failed to update release');
+      const message = err instanceof Error ? err.message : 'Failed to update release';
+      setError(message)
       return false;
     } finally {
       setIsLoading(false);
@@ -113,8 +116,9 @@ export function useReleases() {
       await releaseService.deleteRelease(id);
       setReleases((prev) => prev.filter((r) => r.id !== id));
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete release';
+      setError(message);
       return false;
     } finally {
       setIsLoading(false);

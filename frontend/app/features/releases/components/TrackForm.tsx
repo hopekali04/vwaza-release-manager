@@ -10,16 +10,18 @@ interface TrackFormProps {
   trackCount: number;
 }
 
+type TrackFormErrors = Partial<Record<keyof CreateTrackData, string>>;
+
 export function TrackForm({ initialData, onSubmit, onCancel, isLoading, trackCount }: TrackFormProps) {
   const [formData, setFormData] = useState<CreateTrackData>({
     title: initialData?.title || '',
     trackOrder: initialData?.trackOrder || trackCount + 1,
     isrc: initialData?.isrc || '',
   });
-  const [errors, setErrors] = useState<Partial<CreateTrackData>>({});
+  const [errors, setErrors] = useState<TrackFormErrors>({});
 
   const validate = (): boolean => {
-    const newErrors: any = {};
+    const newErrors: TrackFormErrors = {};
     
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';

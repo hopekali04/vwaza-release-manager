@@ -20,8 +20,9 @@ export function useRelease(releaseId: string | undefined) {
       ]);
       setRelease(releaseData);
       setTracks(tracksData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch release';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -40,8 +41,9 @@ export function useRelease(releaseId: string | undefined) {
       const { url } = await releaseService.uploadCoverArt(releaseId, file);
       setRelease((prev) => prev ? { ...prev, coverArtUrl: url } : null);
       return true;
-    } catch (err: any) {
-      setError(err.message || 'Failed to upload cover art');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to upload cover art';
+      setError(message);
       return false;
     } finally {
       setIsLoading(false);
