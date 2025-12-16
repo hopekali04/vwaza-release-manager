@@ -52,7 +52,7 @@ export class ReleaseRepository implements IReleaseRepository {
     return result.rows.map(this.mapToEntity);
   }
 
-  async update(id: string, data: UpdateReleaseData): Promise<Release | null> {
+  async update(id: string, data: UpdateReleaseData, client?: import('pg').PoolClient): Promise<Release | null> {
     const updates: string[] = [];
     const values: unknown[] = [];
     let paramIndex = 1;
@@ -79,7 +79,8 @@ export class ReleaseRepository implements IReleaseRepository {
     }
 
     values.push(id);
-    const result = await this.pool.query(
+    const queryRunner = client || this.pool;
+    const result = await queryRunner.query(
       `UPDATE releases SET ${updates.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
       values
     );
