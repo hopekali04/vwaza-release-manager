@@ -1,7 +1,7 @@
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 import { ReleaseStatus } from '@vwaza/shared';
-import { createLogger } from '@shared/logger';
-import { loadConfig } from '@config/index';
+import { createLogger } from '@shared/logger.js';
+import { loadConfig } from '@config/index.js';
 
 interface ProcessingRelease {
   id: string;

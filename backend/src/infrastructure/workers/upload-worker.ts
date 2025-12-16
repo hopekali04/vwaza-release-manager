@@ -1,8 +1,8 @@
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 import { UploadJobStatus, UploadJobType } from '@vwaza/shared';
-import { createLogger } from '@shared/logger';
-import { loadConfig } from '@config/index';
-import { CloudStorageService } from '@infrastructure/storage/CloudStorageService';
+import { createLogger } from '@shared/logger.js';
+import { loadConfig } from '@config/index.js';
+import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { readFile } from 'fs/promises';
 import { basename } from 'path';
 import type { PoolClient } from 'pg';

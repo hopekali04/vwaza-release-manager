@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 import { ITrackRepository } from '@domain/repositories/ITrackRepository.js';
 import { Track, CreateTrackData, UpdateTrackData } from '@domain/entities/Track.js';
 

@@ -1,7 +1,7 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { UploadJobType, ReleaseStatus } from '@vwaza/shared';
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 
 export class UploadCoverArtUseCase {
   constructor(

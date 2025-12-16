@@ -2,7 +2,7 @@ import 'dotenv/config';
 import fs from 'fs/promises';
 import path from 'path';
 import pg from 'pg';
-import { loadConfig } from '@config/index';
+import { loadConfig } from '@config/index.js';
 
 const { Pool } = pg;
 

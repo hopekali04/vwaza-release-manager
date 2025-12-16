@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { Release, CreateReleaseData, UpdateReleaseData } from '@domain/entities/Release.js';
 import { ReleaseStatus } from '@vwaza/shared';

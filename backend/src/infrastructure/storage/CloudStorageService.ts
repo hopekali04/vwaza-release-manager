@@ -2,8 +2,8 @@ import { randomUUID } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { parseBuffer } from 'music-metadata';
 import { lookup as mimeLookup } from 'mime-types';
-import { createLogger } from '@shared/logger';
-import { loadConfig } from '@config/index';
+import { createLogger } from '@shared/logger.js';
+import { loadConfig } from '@config/index.js';
 import { UploadJobType } from '@vwaza/shared';
 
 /**

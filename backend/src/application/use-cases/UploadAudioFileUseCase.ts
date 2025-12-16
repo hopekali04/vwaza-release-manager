@@ -1,7 +1,7 @@
 import { ITrackRepository } from '@domain/repositories/ITrackRepository.js';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { UploadJobType } from '@vwaza/shared';
-import { getDatabasePool } from '@infrastructure/database';
+import { getDatabasePool } from '@infrastructure/database/index.js';
 
 export class UploadAudioFileUseCase {
   constructor(

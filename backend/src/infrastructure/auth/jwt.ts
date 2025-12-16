@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { UserRole } from '@vwaza/shared';
-import { loadConfig } from '@config/index';
+import { loadConfig } from '@config/index.js';
 
 export interface JwtPayload {
   userId: string;
