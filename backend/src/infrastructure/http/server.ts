@@ -2,6 +2,7 @@ import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import multipart from '@fastify/multipart';
@@ -51,6 +52,20 @@ async function buildServer() {
   await server.register(cors, {
     origin: config.corsOrigin,
     credentials: true,
+  });
+
+  // Register global rate limiting
+  await server.register(rateLimit, {
+    max: 100, // 100 requests
+    timeWindow: '1 minute', // per minute
+    cache: 10000,
+    allowList: ['127.0.0.1'], // Whitelist localhost for development
+    redis: undefined, // Can be configured with Redis for distributed rate limiting
+    errorResponseBuilder: () => ({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'Rate limit exceeded. Please try again later.',
+    }),
   });
 
   // Register multipart for file uploads
