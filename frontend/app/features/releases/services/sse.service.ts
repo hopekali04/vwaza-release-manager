@@ -43,10 +43,12 @@ export class SSEService {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     
     try {
-      this.eventSource = new EventSource(`${apiUrl}/api/releases/subscribe`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        } as any,
+      // EventSource doesn't support custom headers, so we pass the token via query parameter
+      const url = new URL(`${apiUrl}/api/releases/subscribe`);
+      url.searchParams.set('token', token);
+      
+      this.eventSource = new EventSource(url.toString(), {
+        withCredentials: true,
       });
 
       this.eventSource.onmessage = (event: MessageEvent) => {
