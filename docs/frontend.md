@@ -186,7 +186,7 @@ Shows active route highlighting and user info.
 ### Prerequisites
 
 - Node.js 18+ and pnpm
-- Backend API running on `http://localhost:3000`
+- Backend API running on `http://localhost:4000`
 
 ### Installation
 
@@ -198,7 +198,7 @@ pnpm install
 cp frontend/.env.example frontend/.env
 
 # Edit .env to point to your backend
-# VITE_API_URL=http://localhost:3000
+# VITE_API_URL=http://localhost:4000
 ```
 
 ### Development
@@ -228,7 +228,7 @@ pnpm build
 **File**: `.env.example`
 
 ```bash
-VITE_API_URL=http://localhost:3000  # Backend API URL
+VITE_API_URL=http://localhost:4000  # Backend API URL
 ```
 
 Create `.env` locally (not committed to git):
@@ -366,7 +366,7 @@ Password: Test@123
 ### Common Issues
 
 **"Cannot connect to backend"**
-- Ensure backend is running on `http://localhost:3000`
+- Ensure backend is running on `http://localhost:4000`
 - Check `VITE_API_URL` in `.env`
 - Check CORS settings in backend
 

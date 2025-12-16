@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS migrations (
 
 ```bash
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  http://localhost:3000/api/profile
+  http://localhost:4000/api/profile
 ```
 
 ### Database Connection Errors

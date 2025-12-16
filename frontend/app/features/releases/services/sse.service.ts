@@ -40,7 +40,7 @@ export class SSEService {
    * Connect to the SSE endpoint
    */
   private connect(token: string): void {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
     
     try {
       // EventSource doesn't support custom headers, so we pass the token via query parameter

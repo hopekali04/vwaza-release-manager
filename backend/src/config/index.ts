@@ -53,7 +53,7 @@ function getEnvVarAsNumber(key: string, defaultValue?: number): number {
 export function loadConfig(): Config {
   const rawConfig = {
     nodeEnv: getEnvVar('NODE_ENV', 'development'),
-    port: getEnvVarAsNumber('PORT', 3000),
+    port: getEnvVarAsNumber('PORT', 4000),
     host: getEnvVar('HOST', '0.0.0.0'),
     corsOrigin: getEnvVar('CORS_ORIGIN', 'http://localhost:5173'),
     logLevel: getEnvVar('LOG_LEVEL', 'info'),

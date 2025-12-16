@@ -16,7 +16,7 @@ cd frontend
 cp .env.example .env
 
 # Edit .env to point to your backend (default is correct)
-# VITE_API_URL=http://localhost:3000
+# VITE_API_URL=http://localhost:4000
 ```
 
 ### 3. Start Backend (Required!)
@@ -29,7 +29,7 @@ cd backend
 pnpm dev
 ```
 
-Backend should be running on `http://localhost:3000`
+Backend should be running on `http://localhost:4000`
 
 ### 4. Start Frontend
 
@@ -160,8 +160,8 @@ These routes show "Coming Soon" pages:
 
 **Solutions:**
 1. Ensure backend is running: `cd backend && pnpm dev`
-2. Check backend is on port 3000: `curl http://localhost:3000/health`
-3. Verify `.env` has `VITE_API_URL=http://localhost:3000`
+2. Check backend is on port 4000: `curl http://localhost:4000/health`
+3. Verify `.env` has `VITE_API_URL=http://localhost:4000`
 4. Check browser console for CORS errors
 5. Ensure backend CORS allows `http://localhost:5173`
 
@@ -219,7 +219,7 @@ Current implementation uses these backend endpoints:
 
 **Sign Up:**
 ```bash
-curl -X POST http://localhost:3000/api/auth/signup \
+curl -X POST http://localhost:4000/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
     "email": "test@example.com",
@@ -231,7 +231,7 @@ curl -X POST http://localhost:3000/api/auth/signup \
 
 **Sign In:**
 ```bash
-curl -X POST http://localhost:3000/api/auth/signin \
+curl -X POST http://localhost:4000/api/auth/signin \
   -H "Content-Type: application/json" \
   -d '{
     "email": "artist@vwaza.com",
