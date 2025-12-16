@@ -52,8 +52,9 @@ export default function ReleaseDetailPage() {
       const newTrack = await releaseService.createTrack(id, data);
       setTracks([...tracks, newTrack]);
       setShowTrackForm(false);
-    } catch (err: any) {
-      notifyError(err.message || 'Failed to create track');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create track';
+      notifyError(message);
     }
   };
 
@@ -62,8 +63,9 @@ export default function ReleaseDetailPage() {
     try {
       await releaseService.deleteTrack(trackId);
       setTracks(tracks.filter(t => t.id !== trackId));
-    } catch (err: any) {
-      notifyError(err.message || 'Failed to delete track');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete track';
+      notifyError(message);
     }
   };
 
@@ -75,8 +77,9 @@ export default function ReleaseDetailPage() {
         t.id === trackId ? { ...t, audioFileUrl: url, durationSeconds: duration } : t
       ));
       return true;
-    } catch (err: any) {
-      notifyError(err.message || 'Failed to upload audio');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to upload audio';
+      notifyError(message);
       return false;
     }
   };
@@ -106,8 +109,9 @@ export default function ReleaseDetailPage() {
     try {
       await releaseService.submitRelease(id);
       navigate('/dashboard/releases');
-    } catch (err: any) {
-      notifyError(err.message || 'Failed to submit release');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to submit release';
+      notifyError(message);
     }
   };
 
