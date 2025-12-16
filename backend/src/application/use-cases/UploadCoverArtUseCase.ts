@@ -1,6 +1,7 @@
 import { IReleaseRepository } from '@domain/repositories/IReleaseRepository.js';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
 import { UploadJobType, ReleaseStatus } from '@vwaza/shared';
+import { getDatabasePool } from '@infrastructure/database';
 
 export class UploadCoverArtUseCase {
   constructor(
@@ -29,18 +30,48 @@ export class UploadCoverArtUseCase {
       throw new Error('Cover art can only be uploaded for draft releases');
     }
 
-    // Upload to cloud storage
-    const { url } = await this.cloudStorage.uploadFile(
-      file,
-      filename,
-      UploadJobType.COVER_ART
-    );
+    const pool = getDatabasePool();
+    const client = await pool.connect();
+    let uploadedUrl: string | null = null;
 
-    // Update release with cover art URL
-    await this.releaseRepository.update(releaseId, {
-      coverArtUrl: url,
-    });
+    try {
+      // Begin transaction
+      await client.query('BEGIN');
 
-    return url;
+      // Upload to cloud storage first
+      const { url } = await this.cloudStorage.uploadFile(
+        file,
+        filename,
+        UploadJobType.COVER_ART
+      );
+      uploadedUrl = url;
+
+      // Update release with cover art URL using repository
+      await this.releaseRepository.update(
+        releaseId,
+        { coverArtUrl: url },
+        client
+      );
+
+      // Commit transaction
+      await client.query('COMMIT');
+
+      return url;
+    } catch (error) {
+      // Rollback transaction
+      await client.query('ROLLBACK');
+
+      // Clean up uploaded file if DB update failed
+      if (uploadedUrl) {
+        await this.cloudStorage.deleteFile(uploadedUrl).catch((cleanupError) => {
+          // Log but don't throw - cleanup is best-effort
+          console.error('Failed to cleanup orphaned file:', uploadedUrl, cleanupError);
+        });
+      }
+
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }
