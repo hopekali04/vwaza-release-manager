@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Vwaza Release Manager Backend API",
   "main": "dist/infrastructure/http/server.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/infrastructure/http/server.ts",
     "build": "tsc && tsc-alias",
@@ -27,7 +28,7 @@
     "@fastify/helmet": "^11.1.1",
     "@fastify/jwt": "^7.2.4",
     "@fastify/multipart": "^8.1.0",
-    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/rate-limit": "^9.0.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^2.1.0",
     "@supabase/supabase-js": "^2.39.3",
