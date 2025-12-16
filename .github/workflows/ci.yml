@@ -182,7 +182,7 @@ jobs:
 
   frontend:
     name: Frontend Build
-    needs: setup
+    needs: [setup, shared]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -210,7 +210,8 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
+      - name: Build shared package (ensure dist exists)
+        run: pnpm -C shared build
       - name: Build frontend
         working-directory: frontend
         env:
