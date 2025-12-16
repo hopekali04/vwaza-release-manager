@@ -3,13 +3,14 @@ import { config } from 'dotenv';
 import { FastifyInstance } from 'fastify';
 import Fastify from 'fastify';
 import { authRoutes } from '@infrastructure/http/routes/authRoutes.js';
+import { releaseRoutes } from '@infrastructure/http/routes/releaseRoutes.js';
 import { UserRole } from '@vwaza/shared';
 import { createDatabasePool, closeDatabasePool, getDatabasePool } from '@infrastructure/database/index.js';
 
 // Load environment variables from .env file
 config();
 
-describe('Auth Routes Integration Tests', () => {
+describe('API Integration Tests', () => {
   let server: FastifyInstance;
 
   beforeAll(async () => {
@@ -17,17 +18,19 @@ describe('Auth Routes Integration Tests', () => {
     process.env.NODE_ENV = process.env.NODE_ENV || 'test';
     process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret-key-for-testing';
     process.env.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
-    process.env.AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-    process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || 'test-key';
-    process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || 'test-secret';
-    process.env.AWS_S3_BUCKET = process.env.AWS_S3_BUCKET || 'test-bucket';
+    
+    // Supabase Configuration (Mocked for testing)
+    process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://test.supabase.co';
+    process.env.SUPABASE_KEY = process.env.SUPABASE_KEY || 'test-key';
+    process.env.SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'test-bucket';
     
     // Initialize database pool
     createDatabasePool();
 
-    // Create Fastify server with auth routes
+    // Create Fastify server with routes
     server = Fastify();
     await server.register(authRoutes, { prefix: '/api/auth' });
+    await server.register(releaseRoutes, { prefix: '/api' });
   });
 
   afterAll(async () => {
@@ -39,6 +42,9 @@ describe('Auth Routes Integration Tests', () => {
     // Clean up test data before each test
     const pool = getDatabasePool();
     await pool.query('DELETE FROM users WHERE email LIKE $1', ['%@test.com']);
+    // Also clean up releases if needed, though cascade delete from users might handle it
+    // But for safety in E2E tests:
+    // await pool.query('DELETE FROM releases WHERE title = $1', ['My First Release']);
   });
 
   describe('POST /api/auth/signup', () => {
@@ -357,6 +363,49 @@ describe('Auth Routes Integration Tests', () => {
       });
 
       expect(response.statusCode).toBe(400);
+    });
+  });
+
+  describe('End-to-End Flow', () => {
+    it('should allow a user to sign up, login, and create a release', async () => {
+      // 1. Sign Up
+      const signupResponse = await server.inject({
+        method: 'POST',
+        url: '/api/auth/signup',
+        payload: {
+          email: 'e2e@test.com',
+          password: 'SecureP@ss123',
+          artistName: 'E2E Artist',
+          role: UserRole.ARTIST,
+        },
+      });
+
+      expect(signupResponse.statusCode).toBe(201);
+      const signupBody = JSON.parse(signupResponse.body);
+      const token = signupBody.accessToken;
+      const userId = signupBody.user.id;
+
+      // 2. Create Release (using the token from signup)
+      const releaseResponse = await server.inject({
+        method: 'POST',
+        url: '/api/releases',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        payload: {
+          title: 'My First Release',
+          genre: 'Pop',
+        },
+      });
+
+      expect(releaseResponse.statusCode).toBe(201);
+      const releaseBody = JSON.parse(releaseResponse.body);
+      
+      expect(releaseBody).toHaveProperty('id');
+      expect(releaseBody.title).toBe('My First Release');
+      expect(releaseBody.genre).toBe('Pop');
+      expect(releaseBody.status).toBe('DRAFT');
+      expect(releaseBody.artistId).toBe(userId);
     });
   });
 });
