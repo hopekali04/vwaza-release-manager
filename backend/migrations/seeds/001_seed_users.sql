@@ -14,7 +14,7 @@ INSERT INTO users (id, email, password_hash, artist_name, role)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'admin@vwaza.com',
-    '$2b$10$YQ7Y8nZ3eLq9Qy3xGz9Fv.HXvGKq3Z5Y5qZz5qZ5qZ5qZ5qZ5qZ5u',
+    '$2b$10$LXynZqIcuURove5w6kDxTeCHlm5jRBM3RlrfYLdLNMTHrIJy8RLSO',
     NULL,
     'ADMIN'
 ) ON CONFLICT (email) DO NOTHING;
@@ -27,7 +27,7 @@ INSERT INTO users (id, email, password_hash, artist_name, role)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
     'artist@vwaza.com',
-    '$2b$10$ZQ8Z9oZ4fMr0Rz4yHz0Gw.IYwHLr4A6Z6rAa6rA6rA6rA6rA6rA6v',
+    '$2b$10$7rpSSlUMZl14UxjdCdZl4eLZyFXn0XEHM58eeD.AmGwhIj8qCHsS6',
     'Test Artist',
     'ARTIST'
 ) ON CONFLICT (email) DO NOTHING;
