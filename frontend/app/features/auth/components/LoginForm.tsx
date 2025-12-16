@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Button, Input, GoogleIcon, Alert } from '~/components/ui';
+import { showToast } from '~/lib/toast';
 import type { SignInRequestDto } from '../types';
 
 interface LoginFormProps {
@@ -54,12 +55,60 @@ export function LoginForm({ onSubmit, isLoading = false, error, onErrorClear }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      showToast({
+        variant: 'error',
+        title: 'Validation Error',
+        message: 'Please fix the errors in the form before submitting.'
+      });
+      return;
+    }
 
     try {
       await onSubmit(formData);
+      showToast({
+        variant: 'success',
+        title: 'Welcome Back',
+        message: 'You have successfully logged in.'
+      });
     } catch (err) {
-      // Error handled by parent
+      // Extract error message
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'An unexpected error occurred. Please try again.';
+      
+      // Show specific error showToast
+      if (errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('incorrect')) {
+        showToast({
+          variant: 'error',
+          title: 'Invalid Credentials',
+          message: 'The email or password you entered is incorrect. Please try again.'
+        });
+      } else if (errorMessage.toLowerCase().includes('not found')) {
+        showToast({
+          variant: 'error',
+          title: 'Account Not Found',
+          message: 'No account exists with this email. Please sign up first.'
+        });
+      } else if (errorMessage.toLowerCase().includes('rate limit')) {
+        showToast({
+          variant: 'error',
+          title: 'Too Many Attempts',
+          message: 'Please wait a few minutes before trying again.'
+        });
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')) {
+        showToast({
+          variant: 'error',
+          title: 'Connection Error',
+          message: 'Unable to connect to the server. Please check your internet connection.'
+        });
+      } else {
+        showToast({
+          variant: 'error',
+          title: 'Login Failed',
+          message: errorMessage
+        });
+      }
     }
   };
 
