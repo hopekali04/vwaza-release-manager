@@ -392,17 +392,6 @@ Password: Test@123
 5. **Auth State**: Use `useAuth()` hook everywhere, never access localStorage directly
 6. **Routing**: Use `<Link>` from react-router for navigation, never `<a>` tags
 
-## Contributing
-
-When adding new features:
-
-1. Create components in `components/` if reusable
-2. Add routes in `routes/` following naming convention
-3. Update `routes.ts` with new route config
-4. Use existing auth patterns from `AuthContext`
-5. Follow design system colors and spacing
-6. Add error handling and loading states
-7. Update this documentation
 
 ## Architecture Notes
 
