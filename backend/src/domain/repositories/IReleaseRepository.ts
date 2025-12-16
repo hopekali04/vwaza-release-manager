@@ -1,5 +1,6 @@
 import { Release, CreateReleaseData, UpdateReleaseData } from '../entities/Release.js';
 import { ReleaseStatus } from '@vwaza/shared';
+import type { PoolClient } from 'pg';
 
 export interface IReleaseRepository {
   create(data: CreateReleaseData): Promise<Release>;
@@ -7,7 +8,7 @@ export interface IReleaseRepository {
   findByArtistId(artistId: string): Promise<Release[]>;
   findByStatus(status: ReleaseStatus): Promise<Release[]>;
   findAll(): Promise<Release[]>;
-  update(id: string, data: UpdateReleaseData): Promise<Release | null>;
+  update(id: string, data: UpdateReleaseData, client?: PoolClient): Promise<Release | null>;
   delete(id: string): Promise<boolean>;
   updateStatus(id: string, status: ReleaseStatus): Promise<Release | null>;
   getReleasesWithTrackCount(artistId?: string): Promise<Array<Release & { trackCount: number }>>;
