@@ -245,15 +245,20 @@ export async function releaseRoutes(fastify: FastifyInstance) {
     controller.rejectRelease.bind(controller)
   );
 
-  // SSE endpoint - Subscribe to release updates
+  // SSE endpoint - Subscribe to release updates (token via query param)
   fastify.get(
     '/releases/subscribe',
     {
-      preHandler: [authenticate],
       schema: {
         tags: ['Releases'],
-        security: [{ bearerAuth: [] }],
         description: 'Subscribe to real-time release updates via Server-Sent Events',
+        querystring: {
+          type: 'object',
+          required: ['token'],
+          properties: {
+            token: { type: 'string', description: 'JWT token for authentication' },
+          },
+        },
       },
     },
     controller.subscribeToUpdates.bind(controller)

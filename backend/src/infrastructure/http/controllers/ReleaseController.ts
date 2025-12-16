@@ -1,6 +1,7 @@
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { AuthenticatedRequest } from '@infrastructure/auth/middleware.js';
+import { verifyAccessToken, type JwtPayload } from '@infrastructure/auth/jwt.js';
 import { ReleaseRepository } from '@infrastructure/repositories/ReleaseRepository.js';
 import { TrackRepository } from '@infrastructure/repositories/TrackRepository.js';
 import { CloudStorageService } from '@infrastructure/storage/CloudStorageService.js';
@@ -230,15 +231,33 @@ export class ReleaseController {
     }
   }
 
-    async subscribeToUpdates(request: AuthenticatedRequest, reply: FastifyReply): Promise<void> {
+    async subscribeToUpdates(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    // Extract and verify token from query parameter
+    const token = typeof request.query === 'object' && request.query !== null 
+      ? (request.query as Record<string, unknown>).token as string | undefined
+      : undefined;
+
+    if (!token) {
+      reply.status(401).send({ error: { message: 'Missing authentication token' } });
+      return;
+    }
+
+    let payload: JwtPayload;
+    try {
+      payload = verifyAccessToken(token);
+    } catch (error) {
+      reply.status(401).send({ error: { message: 'Invalid or expired token' } });
+      return;
+    }
+
     // Set SSE headers
     reply.header('Content-Type', 'text/event-stream');
     reply.header('Cache-Control', 'no-cache');
     reply.header('Connection', 'keep-alive');
 
-    // Fetch initial release list
+    // Fetch initial release list based on user role
     const useCase = new ListReleasesUseCase(this.releaseRepository);
-    const artistId = request.user!.role === UserRole.ARTIST ? request.user!.userId : undefined;
+    const artistId = payload.role === 'ARTIST' ? payload.userId : undefined;
     const result = await useCase.execute({ artistId, page: 1, limit: 1000 });
 
     // Send initial data
