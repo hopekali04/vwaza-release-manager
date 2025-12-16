@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Button, Input, GoogleIcon, Alert } from '~/components/ui';
+import { showToast } from '~/lib/toast';
 import type { SignUpRequestDto } from '../types';
 
 interface SignupFormProps {
@@ -84,12 +85,54 @@ export function SignupForm({ onSubmit, isLoading = false, error, onErrorClear }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      showToast({
+        variant: 'error',
+        title: 'Validation Error',
+        message: 'Please fix the errors in the form before submitting.'
+      });
+      return;
+    }
 
     try {
       await onSubmit(formData);
+      showToast({
+        variant: 'success',
+        title: 'Account Created',
+        message: 'Welcome to Vwaza! Your account has been created successfully.'
+      });
     } catch (err) {
-      // Error handled by parent
+      // Extract error message
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'An unexpected error occurred. Please try again.';
+      
+      // Show specific error toast
+      if (errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('duplicate')) {
+        showToast({
+          variant: 'error',
+          title: 'Email Already Registered',
+          message: 'This email is already associated with an account. Try logging in instead.'
+        });
+      } else if (errorMessage.toLowerCase().includes('rate limit')) {
+        showToast({
+          variant: 'error',
+          title: 'Too Many Attempts',
+          message: 'Please wait a few minutes before trying again.'
+        });
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')) {
+        showToast({
+          variant: 'error',
+          title: 'Connection Error',
+          message: 'Unable to connect to the server. Please check your internet connection.'
+        });
+      } else {
+        showToast({
+          variant: 'error',
+          title: 'Signup Failed',
+          message: errorMessage
+        });
+      }
     }
   };
 
